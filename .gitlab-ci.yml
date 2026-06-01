@@ -1,0 +1,56 @@
+stages:
+  - dotnet
+  - vue
+  - kotlin
+  - integration
+
+# Globale Variablen
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive  # Automatisches Auschecken der Submodules
+  GIT_SUBMODULE_UPDATE_FLAGS: --jobs 4  # Paralleles Update
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
+
+dotnet:pipeline:
+  stage: dotnet
+  trigger:
+    include:
+      - local: .gitlab/.gitlab-ci.dotnet.yml
+    strategy: depend
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+
+vue:pipeline:
+  stage: vue
+  trigger:
+    include:
+      - local: .gitlab/.gitlab-ci.vue.yml
+    strategy: depend
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+
+kotlin:pipeline:
+  stage: kotlin
+  trigger:
+    include:
+      - local: .gitlab/.gitlab-ci.kotlin.yml
+    strategy: depend
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+
+integration:
+  stage: integration
+  needs:
+    - dotnet:pipeline
+    - vue:pipeline
+    - kotlin:pipeline
+  script:
+    - echo "Führe Integration-Tests aus..."

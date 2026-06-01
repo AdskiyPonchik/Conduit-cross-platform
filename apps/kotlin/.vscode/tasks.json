@@ -1,0 +1,78 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": ".\\gradlew",
+            "type": "process",
+            "args": [
+                "assemble"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gradle"
+            ]
+        },
+        {
+            "label": "clean",
+            "command": ".\\gradlew",
+            "type": "process",
+            "args": [
+                "clean"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "install",
+            "command": ".\\gradlew",
+            "type": "process",
+            "args": [
+                "installDebug"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [
+                "$gradle"
+            ]
+        },
+        {
+            "label": "run",
+            "command": "adb",
+            "type": "process",
+            "args": [
+                "shell",
+                "am",
+                "start",
+                "-n",
+                "io.realworld.android/.MainActivity"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "test",
+            "command": ".\\gradlew",
+            "type": "process",
+            "args": [
+                "test"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gradle"
+            ]
+        }
+    ]
+}

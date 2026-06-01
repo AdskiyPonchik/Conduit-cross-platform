@@ -1,0 +1,63 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(user,"Conduit User","reads and writes articles as well as comments, add and edit user accounts")
+
+System_Boundary(conduit_block,"Conduit"){
+    Container_Boundary(conduit_frontend_web,"Conduit Web Frontend"){
+        /'
+        Provides a system to show, edit, and remove blog articles, user accounts, and comments in a webbrowser
+        [Vue.js/TypeScript]
+        '/
+        Component(api,"API","TypeScript","Provides Interface to Backend")
+        Component(components,"Components","TypeScript/Vue","Manage articles, authentication, tagging, likes")
+        Component(layouts,"Layouts","TypeScript/Vue","Basic Layout")
+        Component(pages,"Pages","TypeScript/Vue")
+        Component(router,"Router","TypeScript","Client-side routing, defines permissions")
+        Component(types,"Types","TypeScript","Defines Data Abstractions ")
+        Component(stores,"Stores","TypeScript","Stores user information")
+        Component(utils,"Utils","TypeScript","Request Handling, Formatting")
+        Component(main,"Main","TypeScript/Vue","Constructs App")
+        Component(spa,"index.html","HTML","Shows Single Page Application")
+        Component_Ext(vite_plugins,"Vite Layout/Routing Plugins","TypeScript","Setup Layout and Routing for Vue")
+        Component_Ext(vue,"Vue.js","TypeScript","Framework Vue.js 3")
+        Component_Ext(pinia,"Pinia","TypeScript","State Management")
+        Component_Ext(axios,"Axios","JavaScript/TypeScript","Promise-based HTTP Client for Asynchronous Requests")
+    }
+    Container(conduit_backend_dot,"Conduit Backend","ASP.Net7.0/C#", "Creates, reads, updates, deletes (CRUD-operations) blog articles, user accounts, and comments.")
+}
+Rel(user,spa, "uses via webbrowser","HTTP/REST")
+Rel(main,vue, "initialize app")
+Rel(main,router, "setup routing")
+Rel(main,components, "constructs components")
+Rel(vue,router, "uses")
+Rel(vue,pinia, "uses")
+Rel(main,pinia, "initialize state management")
+Rel(api,types,"uses")
+Rel(api,conduit_backend_dot,"communicates frontend changes","HTTP/REST")
+Rel(api,utils,"uses request handling")
+Rel(axios,conduit_backend_dot,"conducts request handling","HTTP/REST")
+Rel(stores,api,"obtains user information")
+Rel(components,api,"obtains article information")
+Rel(components,types,"uses")
+Rel(components,utils,"uses formatting")
+Rel(components,stores,"uses")
+Rel(components,vue,"uses")
+Rel(components,router,"uses")
+Rel(pages,router,"uses")
+Rel(pages,api,"uses")
+Rel(pages,utils,"uses formatting")
+Rel(pages,stores,"uses")
+Rel(pages,types,"uses")
+Rel(pages,vue,"uses")
+Rel(utils,axios,"uses for request handling")
+Rel(spa,main,"uses")
+Rel(layouts,stores,"uses")
+Rel(router,vite_plugins,"uses")
+Rel(vite_plugins,components,"use layout templates")
+Rel(vite_plugins,layouts,"use layout templates")
+Rel(vite_plugins,pages,"setup file routing")
+
+
+SHOW_FLOATING_LEGEND()
+@enduml

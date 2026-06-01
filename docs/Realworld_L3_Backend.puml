@@ -1,0 +1,39 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+System_Boundary(conduit_block,"Conduit"){
+    Container(conduit_frontend_web,"Conduit Web Frontend","Vue.js/TypeScript","Provides a system to show, edit, and remove blog articles, user accounts, and comments in a webbrowser")
+    Container(conduit_frontend_os,"Conduit OS Frontend","Flutter/Dart","Provides a system to show, edit, and remove blog articles, user accounts, and comments in an operating system.")
+    Container_Boundary(conduit_backend_dot,"Conduit Backend"){
+        /'
+            ASP.Net7.0/C#
+            Creates, reads, updates, deletes (CRUD-operations) blog articles, user accounts, and comments.
+        '/
+            Component(api,"API","C#","setup routes and services; starts application")
+            Component(core,"Core","C#","Representation of Conduit objects, defines database commands")
+            Component(data,"Data","C#","init and manage database")
+            Component(infrastructure,"Infrastructure","C#","handling custom authentication, logging and other utilities")
+            Component_Ext(carter,"Carter","C#","extension of ASP.NET to map endpoints",$link="https://github.com/CarterCommunity/Carter")
+            Component_Ext(asp.net,"ASP.NET Core","C#","Framework for WebApplication")
+        }
+    ContainerDb(conduit_database,"Conduit Database","SQLite|in-memory or file-based/SQL ", "Stores articles, user accounts, and comments")
+
+} 
+'general
+Rel(conduit_frontend_os,api,"communicates frontend changes","HTTP/REST")
+Rel(conduit_frontend_web,api,"communicates frontend changes","HTTP/REST")
+Rel(data,conduit_database,"communicates data changes","SQL")
+
+'backend
+Rel(api,data,"setup database handler")
+Rel(api,asp.net,"setup application")
+Rel(api,infrastructure,"uses")
+Rel(infrastructure,asp.net,"provides services")
+Rel(asp.net,data,"init database handler")
+Rel(data,core,"uses")
+Rel(api,core,"uses representations")
+Rel(carter,asp.net,"map API endpoints")
+Rel(api,carter,"register endpoints")
+
+SHOW_FLOATING_LEGEND()
+@enduml

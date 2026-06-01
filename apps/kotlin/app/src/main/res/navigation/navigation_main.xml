@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/mobile_navigation"
+        app:startDestination="@+id/nav_feed">
+
+    <fragment
+            android:id="@+id/nav_feed"
+            android:name="io.realworld.android.ui.feed.GlobalFeedFragment"
+            android:label="@string/menu_feed"
+            tools:layout="@layout/fragment_feed">
+        <action
+                android:id="@+id/action_globalFeed_openArticle"
+                app:destination="@id/nav_article"
+                app:popUpTo="@id/nav_feed">
+            <argument
+                    android:name="@string/arg_article_id"
+                    app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_my_feed"
+            android:name="io.realworld.android.ui.feed.MyFeedFragment"
+            android:label="@string/menu_my_feed"
+            tools:layout="@layout/fragment_feed">
+        <action
+                android:id="@+id/action_myFeed_openArticle"
+                app:destination="@id/nav_article"
+                app:popUpTo="@id/nav_my_feed">
+            <argument
+                    android:name="@string/arg_article_id"
+                    app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_auth"
+            android:name="io.realworld.android.ui.auth.AuthFragment"
+            android:label="@string/menu_auth"
+            tools:layout="@layout/fragment_auth" />
+
+    <fragment
+            android:id="@+id/nav_settings"
+            android:name="io.realworld.android.ui.settings.SettingsFragment"
+            android:label="@string/menu_settings"
+            tools:layout="@layout/fragment_feed" />
+
+    <fragment
+            android:id="@+id/nav_article"
+            android:name="io.realworld.android.ui.article.ArticleFragment"
+            tools:layout="@layout/fragment_article" />
+
+    <fragment
+            android:id="@+id/nav_create_article"
+            android:name="io.realworld.android.ui.article.CreateArticleFragment"
+            tools:layout="@layout/fragment_create_article" />
+    <fragment
+            android:id="@+id/nav_search"
+            android:name="io.realworld.android.ui.search.SearchResultFragment"
+            android:label="@string/menu_search"
+            tools:layout="@layout/fragment_feed">
+        <argument
+                android:name="query"
+                app:argType="string"
+                android:defaultValue="" />
+        <action
+                android:id="@+id/action_search_openArticle"
+                app:destination="@id/nav_article">
+            <argument
+                    android:name="@string/arg_article_id"
+                    app:argType="string" />
+        </action>
+    </fragment>
+
+    <action
+            android:id="@+id/action_global_search"
+            app:destination="@id/nav_search" />
+
+</navigation>

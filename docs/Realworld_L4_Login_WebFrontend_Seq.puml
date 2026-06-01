@@ -1,0 +1,94 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+participant "User" as user
+participant "Web-Frontend (Vue.js)" as frontend
+participant "Backend (ASP.Net)" as backend
+participant "Database" as database
+
+
+ref over backend
+    //provide Login REST API
+    UsersModule.cs
+end ref
+backend -> frontend: provides POST "/api/users/login"
+
+user -> frontend: opens "/login" webpage
+ref over frontend
+    // permission and layouting
+    router/permissions.ts
+    pages/login/index.vue
+    components/AuthPage.vue
+end ref
+frontend --> user : presents login webpage
+user -> frontend: send email and password
+
+ref over frontend
+    //internal credential handling
+    useUserStore.ts
+    api/index.ts
+end ref
+frontend -> backend: POST-Request "/api/users/login"
+
+ref over backend
+    //prepare database request
+    UsersHandler.cs
+    ConduitRepository.cs
+    ConduitContext.cs
+end ref
+
+backend -> database: get first user by email
+activate database
+
+database --> backend: return user record
+deactivate database
+
+ref over backend
+    // validate user
+    ConduitRepository.cs
+    UserHandler.cs
+    // create token
+    TokenGenerator.cs
+    // return answer
+    UserDto.cs
+    UserModels.cs
+end ref
+
+backend --> frontend: return status code 200 and user
+
+ref over frontend
+    // update user information
+    useUserStore.ts
+    // check status code and
+    // direct to homepage
+    AuthPage.vue
+    index/index.vue
+    ArticleToggle.vue
+    ArticleList.vue
+    PopularTag.vue
+end ref
+
+frontend -> backend: GET-Request "/api/articles"
+activate backend
+backend -> database: get articles
+activate database
+
+database --> backend: return articles record
+deactivate database
+backend --> frontend: return status code 200 and articles
+deactivate backend
+
+frontend -> backend: GET-Request "/api/tags"
+activate backend
+backend -> database: get tags
+activate database
+database --> backend: return tags record
+deactivate database
+backend --> frontend: return status code 200 and tags
+deactivate backend
+
+frontend --> user: presents homepage in logged-in state
+
+@enduml

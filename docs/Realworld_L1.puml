@@ -1,0 +1,12 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(user,"Conduit User","reads and writes articles as well as comments, add and edit user accounts")
+
+System(conduit,"Blogpost","Provides a system to show, edit, and remove blog articles, user accounts, and comments.")
+
+Rel_D(user,conduit, "uses via webbrowser")
+Rel_D(user,conduit, "uses via operating system")
+
+SHOW_FLOATING_LEGEND()
+@enduml

@@ -1,0 +1,147 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface IArticlesHandler{
+--
+Task<Article> CreateArticleAsync(NewArticleDto, string username, CancellationToken )
+Task<Article> UpdateArticleAsync(ArticleUpdateDto, string slug, string username, CancellationToken)
+Task DeleteArticleAsync(string slug, string username, CancellationToken)
+Task<ArticlesResponseDto> GetArticlesAsync(ArticlesQuery, string? username, bool isFeed,CancellationToken)
+Task<Article> GetArticleBySlugAsync(string slug, string? username, CancellationToken)
+Task<Core.Entities.Comment> AddCommentAsync(string slug, string username, CommentDto, CancellationToken)
+Task RemoveCommentAsync(string slug, int commentId, string username, CancellationToken)
+Task<List<Core.Entities.Comment>> GetCommentsAsync(string slug, string? username, CancellationToken)
+Task<Article> AddFavoriteAsync(string slug, string username, CancellationToken)
+Task<Article> DeleteFavorite(string slug, string username, CancellationToken)
+}
+
+interface IProfilesHandler{
+--
+Task<ProfileDto> GetAsync(string profileUsername, string? username, CancellationToken)
+Task<ProfileDto> FollowProfileAsync(string profileUsername, string username, CancellationToken)
+Task<ProfileDto> UnFollowProfileAsync(string profileUsername, string username, CancellationToken)
+}
+
+interface ITagsHandler{
+--
+Task<string[]> GetTagsAsync(CancellationToken)
+}
+interface IUserHandler{
+--
+Task<UserDto> CreateAsync(NewUserDto, CancellationToken)
+Task<UserDto> UpdateAsync(string username, UpdatedUserDto, CancellationToken)
+Task<UserDto> LoginAsync(LoginUserDto, CancellationToken)
+Task<UserDto> GetAsync(string username, CancellationToken);
+}
+interface ICarterModule{
+--
+void AddRoutes(IEndpointRouteBuilder)
+}
+
+class ArticlesHandler implements IArticlesHandler{
+IConduitRepository
+--
+ArticlesHandler(IConduitRepository)
+[...]
+}
+class ProfilesHandler implements IProfilesHandler{
+IConduitRepository
+--
+ProfilesHandler(IConduitRepository)
+[...]
+}
+class TagsHandler implements ITagsHandler{
+IConduitRepository
+--
+TagsHandler(IConduitRepository)
+[...]
+}
+class UserHandler implements IUserHandler{
+IConduitRepository
+ITokenGenerator
+--
+UserHandler(IConduitRepository, ITokenGenerator)
+[...]
+}
+
+class ArticlesModule implements ICarterModule
+class ProfilesModule implements ICarterModule
+class TagsModule implements ICarterModule
+class UserModule implements ICarterModule
+
+' ArticlesModel
+class ArticleEnvelope <<record>>
+class CommentEnvelope <<record>>
+class CommentsEnvelope <<record>>
+class Comment <<record>>{
+    DateTimeOffset CreatedAt
+    DateTimeOffset UpdatedAt
+    string Body
+    Author Author
+}
+class Author <<record>>
+class ArticleResponse <<record>>{
+    string Slug
+    string Title
+    string Description
+    string Body
+    DateTimeOffset CreatedAt
+    DateTimeOffset UpdatedAt
+    IEnumerable<string> TagList
+    Author Author
+    bool Favorited
+    int FavoritesCount
+}
+class ArticlesResponse <<record>>
+
+class ArticlesMapper{
+    --
+    ArticleResponse MapFromArticleEntity(Article)
+    ArticlesResponse MapFromArticles(ArticlesResponseDto)
+}
+class CommentMapper{
+    --
+    CommentModel MapFromCommentEntity(CommentEntity)
+}
+
+
+' ProfilesModel
+class ProfilesEnvelope <<record>>
+class Profile <<record>>
+note right of Profile
+    Not used
+end note
+
+'TagsModel
+class TagsEnvelope <<record>>
+
+'UserModels
+class UserEnvelope <<record>>
+
+ArticlesMapper -- ArticleResponse
+ArticlesMapper -- Author
+Comment -- Author
+ArticleResponse -- Author
+ArticlesResponse o-- ArticleResponse
+ArticlesModule -- ArticlesResponse
+ArticlesModule -- ArticleResponse
+ArticlesModule -- IArticlesHandler
+ArticlesModule -- ArticleEnvelope
+ArticlesModule -- ArticlesMapper
+ArticlesModule -- Comment
+ArticlesModule -- CommentMapper
+ArticlesModule -- CommentEnvelope
+ArticlesModule -- CommentsEnvelope
+CommentMapper -- Author
+CommentMapper -- Comment : "Comment as CommentModel\n Comment as CommentEntity"
+
+ProfilesModule -- ProfilesEnvelope
+ProfilesModule -- IProfilesHandler
+
+TagsModule -- ITagsHandler
+TagsModule -- TagsEnvelope
+
+UserModule -- IUserHandler
+UserModule -- UserEnvelope
+
+ @enduml

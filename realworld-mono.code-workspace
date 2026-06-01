@@ -1,0 +1,18 @@
+{
+  "folders": [
+    { "path": ".", "name": "📦 RealWorld Mono" },
+    { "path": "apps/dotnet", "name": "💾 DotNet API" },
+    { "path": "apps/vue", "name": "🖥️ Vue Frontend" }
+  ],
+  "settings": {
+    "git.autoRepositoryDetection": false,
+  },
+  "extensions": {
+    "recommendations": [
+      "mhutchie.git-graph",
+      "yzhang.markdown-all-in-one",
+      "oderwat.indent-rainbow",
+      "jebbs.plantuml"
+    ]
+  }
+}

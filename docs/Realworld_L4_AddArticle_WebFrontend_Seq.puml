@@ -1,0 +1,112 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+participant "User" as user
+participant "Web-Frontend (Vue.js)" as frontend
+participant "Backend (ASP.Net)" as backend
+participant "Database" as database
+
+note over frontend: logged-in user
+
+ref over backend
+    //provide AddArticle REST API
+    ArticlesModule.cs
+end ref
+backend -> frontend: provides POST "/api/articles"
+
+user -> frontend: opens "/articles/create" webpage
+ref over frontend
+    // permission and layouting
+    router/permissions.ts
+    pages/article/create.vue
+    pages/article/components/ArticleForm.vue
+end ref
+frontend --> user : presents create article webpage
+user -> frontend: send title, description, body, and tags
+
+ref over frontend
+    //prepare backend request
+    pages/article/components/ArticleForm.vue
+    api/index.ts
+end ref
+frontend -> backend: POST-Request "/api/articles"
+
+ref over backend
+    //load user information
+    ArticlesHandler.cs
+    ConduitRepository.cs
+    ConduitContext.cs
+end ref
+
+backend -> database: get user by name
+activate database
+
+database --> backend: return user record
+deactivate database
+
+ref over backend
+    //upsert (update or create) tags
+    ArticlesHandler.cs
+    ConduitRepository.cs
+    ConduitContext.cs
+end ref
+
+backend -> database: upsert tags
+activate database
+
+database --> backend: return upserted tags
+deactivate database
+
+ref over backend
+    //add article
+    ArticlesHandler.cs
+    ConduitRepository.cs
+    ConduitContext.cs
+end ref
+
+backend -> database: add article
+activate database
+
+database --> backend: return added article
+deactivate database
+
+ref over backend
+    //prepare response
+     ArticlesModule.cs
+     ArticlesMapper.cs
+     ArticlesResponse.cs
+     ArticlesEnvelope.cs
+end ref
+
+backend --> frontend: return status code 200 and article
+
+ref over frontend
+    // load and layout article
+    pages/article/~[[id]].vue
+    pages/article/components/CommentList.vue
+end ref
+
+frontend -> backend: GET-Request "/api/articles/{slug}"
+activate backend
+backend -> database: get article
+activate database
+
+database --> backend: return article record
+deactivate database
+backend --> frontend: return status code 200 and article
+deactivate backend
+
+frontend -> backend: GET-Request "/api/articles/{slug}/comments"
+activate backend
+backend -> database: get comments
+activate database
+database --> backend: return comments record
+deactivate database
+backend --> frontend: return status code 200 and comments
+deactivate backend
+
+frontend --> user: presents article webpage
+
+@enduml

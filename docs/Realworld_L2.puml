@@ -1,0 +1,21 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user,"Conduit User","reads and writes articles as well as comments, add and edit user accounts")
+
+System_Boundary(conduit_block,"Conduit"){
+    Container(conduit_frontend_web,"Conduit Web Frontend","Vue.js/TypeScript","Provides a system to show, edit, and remove blog articles, user accounts, and comments in a webbrowser")
+    Container(conduit_frontend_native,"Conduit Native Frontend","Flutter/Dart","Provides a system to show, edit, and remove blog articles, user accounts, and comments in an operating system.")
+    Container(conduit_backend_dot,"Conduit Backend","ASP.Net7.0/C#", "Creates, reads, updates, deletes (CRUD-operations) blog articles, user accounts, and comments.")
+    ContainerDb(conduit_database_sqlite,"Conduit Database","SQLite (File or InMemory)", "Stores articles, user accounts, and comments")
+}
+
+
+Rel_D(user,conduit_frontend_web, "uses via webbrowser","HTTP/REST")
+Rel_D(user,conduit_frontend_native, "uses via operating system")
+Rel_D(conduit_frontend_native,conduit_backend_dot,"communicates frontend changes","HTTP/REST")
+Rel_D(conduit_frontend_web,conduit_backend_dot,"communicates frontend changes","HTTP/REST")
+Rel_D(conduit_backend_dot,conduit_database_sqlite,"communicates data changes","SQL")
+
+SHOW_FLOATING_LEGEND()
+@enduml
