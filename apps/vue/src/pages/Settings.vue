@@ -102,7 +102,13 @@ async function onSubmit() {
 
   try {
     // eslint-disable-next-line unicorn/no-array-reduce
-    const filteredForm = Object.entries(form).reduce((form, [k, v]) => v === null ? form : Object.assign(form, { [k]: v }), {})
+    // Fehlerbehebung Passwort-Bug (Ausschluss von leeren Strings bei 'password')
+    const filteredForm = Object.entries(form).reduce((acc, [k, v]) => {
+      if (v === null || (k === 'password' && v === '')) {
+        return acc
+      }
+      return Object.assign(acc, { [k]: v })
+    }, {})
     const userData = await api.user.updateCurrentUser({ user: filteredForm }).then(res => res.data.user)
     userStore.updateUser(userData)
     await routerPush('profile', { username: userData.username })
