@@ -1,5 +1,7 @@
 ﻿using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.FileProviders;
 using Realworlddotnet.Api.Features.Articles;
+using Realworlddotnet.Api.Features.Images;
 using Realworlddotnet.Api.Features.Profiles;
 using Realworlddotnet.Api.Features.Search;
 using Realworlddotnet.Api.Features.Tags;
@@ -133,8 +135,17 @@ app.UseSerilogRequestLogging(options =>
         diagnosticContext.Set("UserId", httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "")
 );
 
+var imagesPath = Path.Combine(builder.Environment.ContentRootPath, "images");
+Directory.CreateDirectory(imagesPath);
 
 app.UsePathBase("/api");
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesPath),
+    RequestPath = "/images"
+});
+
 app.UseProblemDetails();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -144,6 +155,7 @@ app.AddProfilesEndpoints();
 app.AddArticlesEndpoints();
 app.AddUserEndpoints();
 app.AddSearchEndpoints();
+app.AddImageEndpoints();
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "realworlddotnet v1"));
