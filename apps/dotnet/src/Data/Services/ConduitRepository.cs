@@ -120,6 +120,7 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
             .Include(x => x.Author)
             .Include(x => x.Tags)
             .Include(x => x.ArticleFavorites)
+            .Include(x => x.Images)
             .AsNoTracking();
 
         var page = await pageQuery.ToListAsync(cancellationToken);
@@ -138,6 +139,7 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
         var query = context.Articles
             .Include(x => x.Author)
             .Include(x => x.Tags)
+            .Include(x => x.Images)
             .AsQueryable();
 
         if (username != null)
@@ -277,6 +279,7 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
             .Skip(offset).Take(limit)
             .Include(x => x.Tags)
             .Include(x => x.ArticleFavorites)
+            .Include(x => x.Images)
             .AsNoTracking();
 
         var page = await pageQuery.ToListAsync(cancellationToken);

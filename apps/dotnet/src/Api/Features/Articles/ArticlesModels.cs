@@ -25,7 +25,10 @@ public record ArticleResponse(
     IEnumerable<string> TagList,
     Author Author,
     bool Favorited,
-    int FavoritesCount);
+    int FavoritesCount)
+{
+    public List<string> Images { get; set; } = new();
+}
 
 public record ArticlesResponse(
     IEnumerable<ArticleResponse> Articles,

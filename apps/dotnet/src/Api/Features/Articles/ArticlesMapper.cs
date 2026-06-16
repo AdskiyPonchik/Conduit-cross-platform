@@ -22,7 +22,10 @@ public static class ArticlesMapper
                 author.Bio,
                 author.Followers.Count != 0),
             article.Favorited,
-            article.FavoritesCount);
+            article.FavoritesCount)
+        {
+            Images = article.Images.Select(i => i.Url).ToList()
+        };
         return result;
     }
 
