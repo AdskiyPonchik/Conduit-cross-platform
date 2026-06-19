@@ -16,6 +16,20 @@
           <form @submit.prevent="onSubmit">
             <fieldset>
               <fieldset class="form-group">
+                <label class="btn btn-sm btn-outline-secondary" style="display: block; text-align: center; cursor: pointer; margin-bottom: 10px;">
+                  Select Local Profile Picture...
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    style="display: none;"
+                    @change="onFileChange"
+                  >
+                </label>
+                
+                <div v-if="localFilePath" class="text-xs-center text-muted" style="margin-bottom: 10px; font-size: 0.85rem;">
+                  Selected file: <code>{{ localFilePath }}</code>
+                </div>
+
                 <input
                   type="text"
                   class="form-control"
@@ -87,6 +101,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { CONFIG } from 'src/config' // Importiert die Konfiguration für den korrekten API-Host
 import { routerPush } from 'src/router'
 import { api, isFetchError } from 'src/services'
 import type { UpdateUser } from 'src/services/api'
@@ -97,11 +112,53 @@ const form: UpdateUser = reactive({})
 const userStore = useUserStore()
 const errors = ref()
 
+// REAKTIVITÄTSVARIABLE: Speichert das rohe, binäre Datei-Objekt (File), wenn ein Nutzer ein Bild wählt.
+// Wird im Code verwendet, um die Daten per Multipart-Formular an das Backend zu senden.
+const selectedFile = ref<File | null>(null)
+// REAKTIVITÄTSVARIABLE: Speichert rein den Dateinamen (z. B. 'avatar.png') als String.
+// Dient ausschließlich dazu, dem Benutzer im HTML-Template visuelles Feedback zu geben.  
+const localFilePath = ref<string>('')
+
+function onFileChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  // Prüfen, ob überhaupt eine Datei ausgewählt wurde
+  if (target.files && target.files.length > 0) {
+    const file = target.files[0]
+    // Zuweisung an die reaktiven Variablen. 
+    // .value ist zwingend erforderlich, da es sich um 'ref'-Variablen handelt.
+    selectedFile.value = file
+    localFilePath.value = file.name
+  }
+}
 async function onSubmit() {
   errors.value = {}
 
   try {
-    // eslint-disable-next-line unicorn/no-array-reduce
+
+    // Aufgabe 4: Bild-Upload an die bestehende Backend-Schnittstelle
+    if (selectedFile.value) {
+      const formData = new FormData()
+      // Der Parameter-Name MUSS exakt 'file' heißen, passend zu IFormFile file im C#-Backend
+      formData.append('file', selectedFile.value)
+
+      // Nutzt CONFIG.API_HOST, um das richtige Backend-Ziel anzusprechen
+      const uploadResponse = await fetch(`${CONFIG.API_HOST}/api/images`, {
+        method: 'POST',
+        headers: {
+          // Nutzt das Token-Schema der Anwendung zur Authentifizierung
+          Authorization: `Token ${userStore.user?.token || ''}`,
+        },
+        body: formData,
+      }).then(res => {
+        if (!res.ok) throw new Error('Profile picture upload failed.')
+        return res.json()
+      })
+
+      // Weist der Formular-URL den vom Backend generierten Bildpfad (data.image) zu
+      if (uploadResponse && uploadResponse.image) {
+        form.image = uploadResponse.image
+      }
+    }
     // Fehlerbehebung Passwort-Bug (Ausschluss von leeren Strings bei 'password')
     const filteredForm = Object.entries(form).reduce((acc, [k, v]) => {
       if (v === null || (k === 'password' && v === '')) {
@@ -140,6 +197,7 @@ const isButtonDisabled = computed(() =>
   && form.username === userStore.user?.username
   && form.bio === userStore.user?.bio
   && form.email === userStore.user?.email
-  && !form.password,
+  && !form.password
+  && !selectedFile.value, // Aktiviert den Button, sobald eine lokale Datei gewählt wurde
 )
 </script>
