@@ -121,6 +121,7 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
             .Include(x => x.Tags)
             .Include(x => x.ArticleFavorites)
             .Include(x => x.Images)
+            .AsSplitQuery() // changed for DB performance.
             .AsNoTracking();
 
         var page = await pageQuery.ToListAsync(cancellationToken);
@@ -280,6 +281,7 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
             .Include(x => x.Tags)
             .Include(x => x.ArticleFavorites)
             .Include(x => x.Images)
+            .AsSplitQuery()
             .AsNoTracking();
 
         var page = await pageQuery.ToListAsync(cancellationToken);
@@ -315,5 +317,10 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
         }
 
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public void AddArticleImage(ArticleImage articleImage)
+    {
+        context.ArticleImages.Add(articleImage);
     }
 }

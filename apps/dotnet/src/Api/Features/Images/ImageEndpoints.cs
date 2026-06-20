@@ -89,7 +89,7 @@ public static class ImageEndpoints
         string slug,
         IFormFile file,
         [FromServices] IHostEnvironment env,
-        [FromServices] ConduitContext context,
+        [FromServices] Core.Repositories.IConduitRepository repository,
         ClaimsPrincipal claimsPrincipal,
         HttpRequest request,
         CancellationToken cancellationToken)
@@ -98,10 +98,16 @@ public static class ImageEndpoints
         var result = ValidateUploadedFile(file, ext);
         if (result != null) { return result; }
 
-        var article = await context.Articles.FirstOrDefaultAsync(a => a.Slug == slug, cancellationToken);
+        var article = await repository.GetArticleBySlugAsync(slug, asNoTracking: false, cancellationToken);
+        
         if (article == null)
         {
             return Results.NotFound(new { message = "Article not found" });
+        }
+        var currentUsername = claimsPrincipal.GetUsername();
+        if (article.Author.Username != currentUsername)
+        {
+            return Results.Json(new { message = "Forbidden: You are not the author of this article." }, statusCode: 403);
         }
 
         var imagesDir = Path.Combine(env.ContentRootPath, "images");
@@ -118,8 +124,8 @@ public static class ImageEndpoints
         var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
         var imageUrl = $"{baseUrl}/images/{filename}";
 
-        context.ArticleImages.Add(new ArticleImage { ArticleId = article.Id, Url = imageUrl });
-        await context.SaveChangesAsync(cancellationToken);
+        repository.AddArticleImage(new ArticleImage { ArticleId = article.Id, Url = imageUrl });
+        await repository.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(new { image = imageUrl });
     }
