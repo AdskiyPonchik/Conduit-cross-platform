@@ -30,8 +30,11 @@
                 class="form-control form-control-lg"
                 aria-label="Username"
                 v-model="form.username"
+                pattern="^[a-zA-Z0-9]+$"
                 required
                 placeholder="Your Name"
+                @invalid="onInvalidUsername"
+                @input="onInputUsername"
               >
             </fieldset>
             <fieldset class="form-group">
@@ -86,6 +89,19 @@ const form: NewUser = reactive({
 const { updateUser } = useUserStore()
 
 const errors = ref()
+
+function onInvalidUsername(event: Event) {
+  const target = event.target as HTMLInputElement
+  // Überschreiben des Defaulttextes
+  target.setCustomValidity('Der Benutzername darf nur aus Buchstaben und Zahlen bestehen. Keine Sonderzeichen erlaubt!')
+}
+
+function onInputUsername(event: Event) {
+  const target = event.target as HTMLInputElement
+  // Wenn der Nutzertippt, wird die Fehlermeldung wieder verworfen
+  // Nur so weiß der Browser, dass er beim nächsten Klick den Text neu validieren darf!
+  target.setCustomValidity('')
+}
 
 async function register() {
   errors.value = {}
