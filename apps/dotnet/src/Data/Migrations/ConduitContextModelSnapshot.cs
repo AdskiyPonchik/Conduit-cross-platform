@@ -44,24 +44,28 @@ namespace Realworlddotnet.Data.Migrations
 
                     b.Property<string>("Body")
                         .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Slug")
                         .IsRequired()
+                        .HasMaxLength(45)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -80,6 +84,7 @@ namespace Realworlddotnet.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Username")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("Timestamp")
@@ -90,6 +95,27 @@ namespace Realworlddotnet.Data.Migrations
                     b.HasIndex("Username");
 
                     b.ToTable("ArticleFavorites");
+                });
+
+            modelBuilder.Entity("Realworlddotnet.Core.Entities.ArticleImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArticleId");
+
+                    b.ToTable("ArticleImages");
                 });
 
             modelBuilder.Entity("Realworlddotnet.Core.Entities.Comment", b =>
@@ -103,16 +129,18 @@ namespace Realworlddotnet.Data.Migrations
 
                     b.Property<string>("Body")
                         .IsRequired()
+                        .HasMaxLength(5000)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Username")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -127,6 +155,7 @@ namespace Realworlddotnet.Data.Migrations
             modelBuilder.Entity("Realworlddotnet.Core.Entities.SearchCount", b =>
                 {
                     b.Property<string>("KeywordId")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Count")
@@ -140,6 +169,7 @@ namespace Realworlddotnet.Data.Migrations
             modelBuilder.Entity("Realworlddotnet.Core.Entities.Tag", b =>
                 {
                     b.Property<string>("Id")
+                        .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -150,22 +180,27 @@ namespace Realworlddotnet.Data.Migrations
             modelBuilder.Entity("Realworlddotnet.Core.Entities.User", b =>
                 {
                     b.Property<string>("Username")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Bio")
                         .IsRequired()
+                        .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Image")
                         .IsRequired()
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Username");
@@ -179,9 +214,11 @@ namespace Realworlddotnet.Data.Migrations
             modelBuilder.Entity("Realworlddotnet.Core.Entities.UserLink", b =>
                 {
                     b.Property<string>("Username")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FollowerUsername")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Username", "FollowerUsername");
@@ -236,6 +273,17 @@ namespace Realworlddotnet.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Realworlddotnet.Core.Entities.ArticleImage", b =>
+                {
+                    b.HasOne("Realworlddotnet.Core.Entities.Article", "Article")
+                        .WithMany("Images")
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Article");
+                });
+
             modelBuilder.Entity("Realworlddotnet.Core.Entities.Comment", b =>
                 {
                     b.HasOne("Realworlddotnet.Core.Entities.Article", "Article")
@@ -279,6 +327,8 @@ namespace Realworlddotnet.Data.Migrations
                     b.Navigation("ArticleFavorites");
 
                     b.Navigation("Comments");
+
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("Realworlddotnet.Core.Entities.User", b =>

@@ -14,6 +14,8 @@ public class ConduitContext(DbContextOptions<ConduitContext> options) : DbContex
     public DbSet<ArticleFavorite> ArticleFavorites { get; set; }
     public DbSet<SearchCount> SearchCounts { get; set; }
 
+    public DbSet<ArticleImage> ArticleImages{get;set;}
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

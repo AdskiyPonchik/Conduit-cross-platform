@@ -51,4 +51,5 @@ public interface IConduitRepository
         string[] keywords, string username, int limit, int offset, CancellationToken cancellationToken);
 
     public Task UpsertSearchCountAsync(string[] keywords, CancellationToken cancellationToken);
+    public void AddArticleImage(ArticleImage articleImage);
 }

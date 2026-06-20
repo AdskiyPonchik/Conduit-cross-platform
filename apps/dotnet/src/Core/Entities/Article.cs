@@ -35,6 +35,8 @@ public class Article(string title, string description, string body)
     public List<Comment> Comments { get; set; } = new();
     public ICollection<ArticleFavorite> ArticleFavorites { get; set; } = new List<ArticleFavorite>();
 
+    public ICollection<ArticleImage> Images { get; set; } = new List<ArticleImage>();
+
     public void UpdateArticle(ArticleUpdateDto update)
     {
         if (!string.IsNullOrWhiteSpace(update.Title))
@@ -55,4 +57,5 @@ public class Article(string title, string description, string body)
 
         UpdatedAt = DateTime.UtcNow;
     }
+
 }
