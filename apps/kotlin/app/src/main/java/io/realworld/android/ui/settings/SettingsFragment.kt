@@ -25,7 +25,6 @@ class SettingsFragment : Fragment() {
         private const val REQUEST_PICK_IMAGE = 1001
         private const val REQUEST_TAKE_PHOTO = 1002
     }
-
     private var _binding: FragmentSettingsBinding? = null
     private val authViewModel by activityViewModels<AuthViewModel>()
     private var selectedImageFile: File? = null
@@ -34,14 +33,17 @@ class SettingsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
 
         return _binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         authViewModel.user.observe(viewLifecycleOwner) {

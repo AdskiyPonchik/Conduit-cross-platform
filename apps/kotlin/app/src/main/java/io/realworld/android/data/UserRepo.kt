@@ -18,40 +18,70 @@ object UserRepo {
     val api = ConduitClient.publicApi
     val authAPI = ConduitClient.authApi
 
-    suspend fun login(email: String, password: String): User? = try {
-        val response = api.loginUser(LoginRequest(LoginData(email, password)))
-        ConduitClient.authToken = response.body()?.user?.token
-        response.body()?.user
-    } catch (e: Exception) { null }
+    suspend fun login(
+        email: String,
+        password: String,
+    ): User? =
+        try {
+            val response = api.loginUser(LoginRequest(LoginData(email, password)))
+            ConduitClient.authToken = response.body()?.user?.token
+            response.body()?.user
+        } catch (e: Exception) {
+            null
+        }
 
-    suspend fun signup(username: String, email: String, password: String): User? = try {
-        val response = api.signupUser(SignupRequest(SignupData(email, password, username)))
-        ConduitClient.authToken = response.body()?.user?.token
-        response.body()?.user
-    } catch (e: Exception) { null }
+    suspend fun signup(
+        username: String,
+        email: String,
+        password: String,
+    ): User? =
+        try {
+            val response = api.signupUser(SignupRequest(SignupData(email, password, username)))
+            ConduitClient.authToken = response.body()?.user?.token
+            response.body()?.user
+        } catch (e: Exception) {
+            null
+        }
 
-    suspend fun getCurrentUser(token: String): User? = try {
-        ConduitClient.authToken = token
-        authAPI.getCurrentUser().body()?.user
-    } catch (e: Exception) { null }
+    suspend fun getCurrentUser(token: String): User? =
+        try {
+            ConduitClient.authToken = token
+            authAPI.getCurrentUser().body()?.user
+        } catch (e: Exception) {
+            null
+        }
 
     suspend fun updateUser(
         bio: String?,
         username: String?,
         image: String?,
         email: String?,
-        password: String?
-    ): User? = try {
-        val response = authAPI.updateCurrentUser(UserUpdateRequest(UserUpdateData(
-            bio, email, image, username, password
-        )))
-        response.body()?.user
-    } catch (e: Exception) { null }
+        password: String?,
+    ): User? =
+        try {
+            val response =
+                authAPI.updateCurrentUser(
+                    UserUpdateRequest(
+                        UserUpdateData(
+                            bio,
+                            email,
+                            image,
+                            username,
+                            password,
+                        ),
+                    ),
+                )
+            response.body()?.user
+        } catch (e: Exception) {
+            null
+        }
 
-    suspend fun getUserProfile() = try {
-        authAPI.getCurrentUser().body()?.user
-    } catch (e: Exception) { null }
-
+    suspend fun getUserProfile() =
+        try {
+            authAPI.getCurrentUser().body()?.user
+        } catch (e: Exception) {
+            null
+        }
     suspend fun uploadProfileImage(imageFile: File): String? {
         return try {
             // MIME Type erkennen

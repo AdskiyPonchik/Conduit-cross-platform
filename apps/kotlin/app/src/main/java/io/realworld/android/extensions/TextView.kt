@@ -20,20 +20,21 @@ val isoDateFormatSimple = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ge
 
 var TextView.timeStamp: String
     set(value) {
-        val date = try {
-            isoDateFormat.parse(value)
-        } catch (e: Exception) {
+        val date =
             try {
-                isoDateFormatWithOffset.parse(value)
-            } catch (e2: Exception) {
+                isoDateFormat.parse(value)
+            } catch (e: Exception) {
                 try {
-                    isoDateFormatSimple.parse(value)
-                } catch (e3: Exception) {
-                    android.util.Log.e("TextView", "Failed to parse date: $value", e3)
-                    null
+                    isoDateFormatWithOffset.parse(value)
+                } catch (e2: Exception) {
+                    try {
+                        isoDateFormatSimple.parse(value)
+                    } catch (e3: Exception) {
+                        android.util.Log.e("TextView", "Failed to parse date: $value", e3)
+                        null
+                    }
                 }
             }
-        }
         text = if (date != null) appDateFormat.format(date) else "Unknown date"
     }
     get() {

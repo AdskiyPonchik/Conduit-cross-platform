@@ -5,8 +5,8 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.edit
 import androidx.core.os.bundleOf
 import androidx.drawerlayout.widget.DrawerLayout
@@ -22,7 +22,6 @@ import io.realworld.api.ConduitClient
 import io.realworld.api.models.entities.User
 
 class MainActivity : AppCompatActivity() {
-
     companion object {
         const val PREFS_FILE_AUTH = "prefs_auth"
         const val PREFS_KEY_TOKEN = "token"
@@ -36,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         try {
             sharedPreferences = getSharedPreferences(PREFS_FILE_AUTH, Context.MODE_PRIVATE)
             authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
@@ -47,7 +46,7 @@ class MainActivity : AppCompatActivity() {
             throw RuntimeException("Activity startup failed", e)
         }
     }
-    
+
     override fun onStart() {
         super.onStart()
         try {
@@ -56,16 +55,18 @@ class MainActivity : AppCompatActivity() {
             val drawerLayout: DrawerLayout = binding.drawerLayout
             val navView: NavigationView = binding.navView
             val navController = findNavController(R.id.nav_host_fragment_content_main)
-            
+
             // Passing each menu ID as a set of Ids because each
             // menu should be considered as top level destinations.
-            appBarConfiguration = AppBarConfiguration(
-                setOf(
-                    R.id.nav_feed,
-                    R.id.nav_my_feed,
-                    R.id.nav_auth
-                ), drawerLayout
-            )
+            appBarConfiguration =
+                AppBarConfiguration(
+                    setOf(
+                        R.id.nav_feed,
+                        R.id.nav_my_feed,
+                        R.id.nav_auth,
+                    ),
+                    drawerLayout,
+                )
             setupActionBarWithNavController(navController, appBarConfiguration)
             navView.setupWithNavController(navController)
 
@@ -90,7 +91,7 @@ class MainActivity : AppCompatActivity() {
             throw RuntimeException("onStart failed", e)
         }
     }
-    
+
     override fun onResume() {
         super.onResume()
     }
@@ -128,25 +129,27 @@ class MainActivity : AppCompatActivity() {
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem?.actionView as? SearchView
         searchView?.queryHint = getString(R.string.action_search)
-        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                val q = query?.trim() ?: return false
-                if (q.isBlank()) return false
-                searchItem.collapseActionView()
-                val navController = findNavController(R.id.nav_host_fragment_content_main)
-                if (ConduitClient.authToken == null) {
-                    navController.navigate(R.id.nav_auth)
-                } else {
-                    navController.navigate(
-                        R.id.action_global_search,
-                        bundleOf("query" to q)
-                    )
+        searchView?.setOnQueryTextListener(
+            object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    val q = query?.trim() ?: return false
+                    if (q.isBlank()) return false
+                    searchItem.collapseActionView()
+                    val navController = findNavController(R.id.nav_host_fragment_content_main)
+                    if (ConduitClient.authToken == null) {
+                        navController.navigate(R.id.nav_auth)
+                    } else {
+                        navController.navigate(
+                            R.id.action_global_search,
+                            bundleOf("query" to q),
+                        )
+                    }
+                    return true
                 }
-                return true
-            }
 
-            override fun onQueryTextChange(newText: String?) = false
-        })
+                override fun onQueryTextChange(newText: String?) = false
+            },
+        )
 
         return true
     }

@@ -1,0 +1,5 @@
+[*.{kt,kts}]
+
+#rule ID to disable wildcard imports in ktlint:
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_property-naming = disabled

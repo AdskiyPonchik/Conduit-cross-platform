@@ -12,14 +12,13 @@ import io.realworld.android.AuthViewModel
 import io.realworld.android.databinding.FragmentLoginSignupBinding
 
 class SignupFragment : Fragment() {
-
     private var _binding: FragmentLoginSignupBinding? = null
     val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         _binding = FragmentLoginSignupBinding.inflate(inflater, container, false)
         _binding?.usernameEditText?.isVisible = true
@@ -28,7 +27,10 @@ class SignupFragment : Fragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding?.apply {
@@ -44,7 +46,7 @@ class SignupFragment : Fragment() {
                 authViewModel.signup(
                     username,
                     emailEditText.text.toString(),
-                    passwordEditText.text.toString()
+                    passwordEditText.text.toString(),
                 )
             }
         }
