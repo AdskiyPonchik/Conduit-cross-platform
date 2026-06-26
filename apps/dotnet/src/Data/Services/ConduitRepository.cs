@@ -168,8 +168,7 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
         article.FavoritesCount =
             await context.ArticleFavorites.CountAsync(x => x.ArticleId == article.Id, cancellationToken);
         article.Favorited = username != null
-            ? article.ArticleFavorites.Any(f => f.Username == username)
-            : false;
+&& article.ArticleFavorites.Any(f => f.Username == username);
         return article;
     }
 
