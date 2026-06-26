@@ -22,15 +22,77 @@
                 placeholder="What's this article about?"
               >
             </fieldset>
-            <fieldset class="form-group">
-              <textarea
+
+            <div class="row">
+              <div class="col-md-6">
+                <fieldset class="form-group">
+                  <label><strong>Artikel-Inhalt (Markdown)</strong></label>
+                  <textarea
+                    class="form-control"
+                    aria-label="Body"
+                    v-model="form.body"
+                    placeholder="Write your article (in markdown)"
+                    :rows="12"
+                  />
+                </fieldset>
+              </div>
+              <div class="col-md-6">
+                <fieldset class="form-group">
+                  <label><strong>Live-Vorschau (WYSIWYG)</strong></label>
+                  <div
+                    id="article-content"
+                    class="form-control article-content"
+                    v-html="renderedBody"
+                    style="min-height: 290px; height: auto; overflow-y: auto; background-color: #fafafa; border: 1px solid #ccc; padding: 10px; border-radius: 4px;"
+                  />
+                </fieldset>
+              </div>
+            </div>
+
+            <fieldset class="form-group" v-if="slug">
+              <label><strong>Artikelbild hochladen</strong></label>
+              <input
+                type="file"
                 class="form-control"
-                aria-label="Body"
-                v-model="form.body"
-                placeholder="Write your article (in markdown)"
-                :rows="8"
+                accept="image/*"
+                @change="onImageUpload"
+                :disabled="isUploading"
               />
+              <div v-if="isUploading" class="text-muted mt-1">Bild wird hochgeladen...</div>
+              <div v-if="uploadError" class="text-danger mt-1">{{ uploadError }}</div>
+
+              <div v-if="uploadedImages.length > 0" class="mt-3">
+                <label><strong>Verfügbare Bild-Links für diesen Artikel:</strong></label>
+                <div class="list-group">
+                  <div 
+                    v-for="imgUrl in uploadedImages" 
+                    :key="imgUrl" 
+                    class="list-group-item"
+                    style="padding: 10px; background: #fff; border: 1px solid #ddd; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;"
+                  >
+                    <span style="font-family: monospace; font-size: 0.9em; word-break: break-all;">
+                      ![alt text]({{ imgUrl }} "Title")
+                    </span>
+                    <div>
+                      <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-primary" 
+                        @click="copyToClipboard(imgUrl)"
+                      >
+                        Kopieren
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </fieldset>
+            
+            <fieldset class="form-group" v-else>
+              <div class="alert alert-info" style="padding: 10px; background-color: #e8f4fd; color: #2196f3; border-radius: 4px;">
+                Hinweis: Bilder können hochgeladen und verwaltet werden, sobald der Artikel zum ersten Mal veröffentlicht wurde (Slug vorhanden ist).
+              </div>
+            </fieldset>
+
             <fieldset class="form-group">
               <input
                 type="text"
@@ -78,6 +140,9 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from 'src/services'
 import type { Article } from 'src/services/api'
+import renderMarkdown from 'src/plugins/marked'
+import { CONFIG } from 'src/config'
+import { useUserStore } from 'src/store/user'
 
 interface FormState {
   title: string
@@ -88,6 +153,7 @@ interface FormState {
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const slug = computed<string>(() => route.params.slug as string)
 
 const form: FormState = reactive({
@@ -106,20 +172,74 @@ function removeTag(tag: string) {
   form.tagList = form.tagList.filter(t => t !== tag)
 }
 
+const uploadedImages = ref<string[]>([])
+const isUploading = ref<boolean>(false)
+const uploadError = ref<string>('')
+
+const renderedBody = computed(() => renderMarkdown(form.body))
+
 async function fetchArticle(slug: string) {
   const article = await api.articles.getArticle(slug).then(res => res.data.article)
 
-  // FIXME: I always feel a little wordy here
   form.title = article.title
   form.description = article.description
   form.body = article.body
   form.tagList = article.tagList
+
+  // Lädt die Bilder-Liste direkt über die API-Antwort, die im Backend über den ArticlesMapper befüllt wird
+  const backendImages = (article as any).images || (article as any).Images
+  if (backendImages && Array.isArray(backendImages)) {
+    uploadedImages.value = [...backendImages]
+  }
 }
 
 onMounted(async () => {
   if (slug.value)
     await fetchArticle(slug.value)
 })
+
+async function onImageUpload(event: Event) {
+  const target = event.target as HTMLInputElement
+  if (!target.files || target.files.length === 0) return
+
+  const file = target.files[0]
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    uploadError.value = ''
+    isUploading.value = true
+
+    const url = `${CONFIG.API_HOST}/api/images/articles/${slug.value}`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${userStore.user?.token || ''}`
+      },
+      body: formData
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result?.message || `Upload fehlgeschlagen (Status ${response.status})`)
+    }
+
+    if (result && result.image) {
+      uploadedImages.value.push(result.image)
+    }
+  } catch (err: any) {
+    uploadError.value = err.message || 'Fehler beim Hochladen des Bildes.'
+  } finally {
+    isUploading.value = false
+    target.value = ''
+  }
+}
+
+function copyToClipboard(url: string) {
+  navigator.clipboard.writeText(`![alt text](${url} "Title")`)
+}
 
 async function onSubmit() {
   let article: Article
