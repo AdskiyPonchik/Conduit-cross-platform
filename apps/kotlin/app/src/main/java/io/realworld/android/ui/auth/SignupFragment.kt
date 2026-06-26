@@ -1,5 +1,6 @@
 package io.realworld.android.ui.auth
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -26,13 +27,22 @@ class SignupFragment : Fragment() {
         return _binding?.root
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding?.apply {
             submitButton.setOnClickListener {
+                val username = usernameEditText.text.toString()
+                if (username.contains('/')) {
+                    errorTextView.text = "No '/' allowed in usernames."
+                    errorTextView.isVisible = true
+                    return@setOnClickListener
+                }
+
+                errorTextView.isVisible = false
                 authViewModel.signup(
-                    usernameEditText.text.toString(),
+                    username,
                     emailEditText.text.toString(),
                     passwordEditText.text.toString()
                 )

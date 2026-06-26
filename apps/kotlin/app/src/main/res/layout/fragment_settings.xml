@@ -6,11 +6,26 @@
         android:layout_height="match_parent">
 
     <EditText
-            android:hint="URL of profile image"
-            android:id="@+id/imageEditText"
-            android:inputType="textUri"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+        android:id="@+id/imageEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:hint="URL of profile image"
+        android:inputType="text" />
+
+    <Button
+        android:id="@+id/chooseImageButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pick image" />
+
+    <Button
+        android:id="@+id/takePhotoButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Take photo" />
+
     <EditText
             android:hint="username"
             android:id="@+id/usernameEditText"
@@ -35,11 +50,12 @@
             android:inputType="textPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
     <Button
-            android:layout_gravity="center"
-            android:text="Update Settings"
-            android:id="@+id/submitButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        android:id="@+id/submitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Update Settings" />
 
 </LinearLayout>

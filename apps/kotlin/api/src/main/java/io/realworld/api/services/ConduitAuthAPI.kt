@@ -6,6 +6,8 @@ import io.realworld.api.models.responses.ArticleResponse
 import io.realworld.api.models.responses.ArticlesResponse
 import io.realworld.api.models.responses.ProfileResponse
 import io.realworld.api.models.responses.UserResponse
+import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -18,6 +20,12 @@ interface ConduitAuthAPI {
     suspend fun updateCurrentUser(
         @Body userUpdateRequest: UserUpdateRequest
     ): Response<UserResponse>
+
+    @Multipart
+    @POST("images")
+    suspend fun uploadImage(
+        @Part image: MultipartBody.Part
+    ): Response<ResponseBody>
 
     @GET("profiles/{username}")
     suspend fun getProfile(
