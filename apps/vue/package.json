@@ -16,7 +16,8 @@
     "test": "pnpm test:unit",
     "test:unit": "vitest run",
     "generate:api": "curl -sL https://raw.githubusercontent.com/gothinkster/realworld/refs/heads/main/api/openapi.yml -o ./src/services/openapi.yml && sta generate -p ./src/services/openapi.yml -o ./src/services -n api.ts",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
   "dependencies": {
     "insane": "^2.6.2",
