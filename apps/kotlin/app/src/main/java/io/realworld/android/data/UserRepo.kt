@@ -8,7 +8,11 @@ import io.realworld.api.models.entities.UserUpdateData
 import io.realworld.api.models.requests.LoginRequest
 import io.realworld.api.models.requests.SignupRequest
 import io.realworld.api.models.requests.UserUpdateRequest
-import io.realworld.api.models.responses.UserResponse
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONObject
+import java.io.File
 
 object UserRepo {
     val api = ConduitClient.publicApi
@@ -47,5 +51,42 @@ object UserRepo {
     suspend fun getUserProfile() = try {
         authAPI.getCurrentUser().body()?.user
     } catch (e: Exception) { null }
+
+    suspend fun uploadProfileImage(imageFile: File): String? {
+        return try {
+            // MIME Type erkennen
+            val mimeType = when (imageFile.extension.lowercase()) {
+                "png" -> "image/png"
+                else -> "image/jpeg"
+            }
+
+            val imagePart = MultipartBody.Part.createFormData(
+                "file",
+                imageFile.name,
+                imageFile.asRequestBody(mimeType.toMediaTypeOrNull())
+            )
+
+            val response = authAPI.uploadImage(imagePart)
+            if (!response.isSuccessful) return null
+
+            val rawBody = response.body()?.string()?.trim().orEmpty()
+            if (rawBody.isBlank()) return null
+
+            when {
+                rawBody.startsWith("{") -> {
+                    val json = JSONObject(rawBody)
+                    json.optString("image").takeIf { it.isNotBlank() }
+                        ?: json.optString("url").takeIf { it.isNotBlank() }
+                        ?: json.optString("imageUrl").takeIf { it.isNotBlank() }
+                        ?: json.optString("path").takeIf { it.isNotBlank() }
+                }
+                rawBody.startsWith("\"") && rawBody.endsWith("\"") -> rawBody.removeSurrounding("\"")
+                rawBody.startsWith("http://") || rawBody.startsWith("https://") -> rawBody
+                else -> "${ConduitClient.baseUrl.trimEnd('/')}/api/images/$rawBody"
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
 
 }
