@@ -8,9 +8,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.realworld.android.R
+import io.realworld.android.utils.MarkdownUtils
 import io.realworld.android.databinding.FragmentArticleBinding
 import io.realworld.android.extensions.loadImage
 import io.realworld.android.extensions.timeStamp
+import io.realworld.api.ConduitClient
 
 class ArticleFragment : Fragment() {
 
@@ -50,7 +52,15 @@ class ArticleFragment : Fragment() {
             article ?: return@observe
             _binding?.apply {
                 titleTextView.text = article.title
-                bodyTextView.text = article.body
+                val htmlBody = MarkdownUtils.markdownToHtml(article.body)
+                val wrappedHtml = MarkdownUtils.wrapArticleHtml(htmlBody)
+                bodyWebView.loadDataWithBaseURL(
+                    ConduitClient.baseUrl,
+                    wrappedHtml,
+                    "text/html",
+                    "utf-8",
+                    null
+                )
                 authorTextView.text = article.author.username
                 dateTextView.timeStamp = article.createdAt
                 avatarImageView.loadImage(article.author.image, true)

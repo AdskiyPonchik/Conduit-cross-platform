@@ -10,6 +10,8 @@ data class ArticleData(
     val body: String?=null,
     @Json(name = "description")
     val description: String?=null,
+    @Json(name = "images")
+    val images: List<String>?=null,
     @Json(name = "tagList")
     val tagList: List<String>?=null,
     @Json(name = "title")
