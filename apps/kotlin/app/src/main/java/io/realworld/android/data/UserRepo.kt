@@ -82,19 +82,22 @@ object UserRepo {
         } catch (e: Exception) {
             null
         }
+
     suspend fun uploadProfileImage(imageFile: File): String? {
         return try {
             // MIME Type erkennen
-            val mimeType = when (imageFile.extension.lowercase()) {
-                "png" -> "image/png"
-                else -> "image/jpeg"
-            }
+            val mimeType =
+                when (imageFile.extension.lowercase()) {
+                    "png" -> "image/png"
+                    else -> "image/jpeg"
+                }
 
-            val imagePart = MultipartBody.Part.createFormData(
-                "file",
-                imageFile.name,
-                imageFile.asRequestBody(mimeType.toMediaTypeOrNull())
-            )
+            val imagePart =
+                MultipartBody.Part.createFormData(
+                    "file",
+                    imageFile.name,
+                    imageFile.asRequestBody(mimeType.toMediaTypeOrNull()),
+                )
 
             val response = authAPI.uploadImage(imagePart)
             if (!response.isSuccessful) return null
@@ -118,5 +121,4 @@ object UserRepo {
             null
         }
     }
-
 }

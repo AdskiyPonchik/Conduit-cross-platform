@@ -1,7 +1,7 @@
 package io.realworld.android.ui.settings
 
-import android.graphics.Bitmap
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -20,11 +20,11 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingsFragment : Fragment() {
-
     companion object {
         private const val REQUEST_PICK_IMAGE = 1001
         private const val REQUEST_TAKE_PHOTO = 1002
     }
+
     private var _binding: FragmentSettingsBinding? = null
     private val authViewModel by activityViewModels<AuthViewModel>()
     private var selectedImageFile: File? = null
@@ -69,9 +69,10 @@ class SettingsFragment : Fragment() {
 
             submitButton.setOnClickListener {
                 viewLifecycleOwner.lifecycleScope.launch {
-                    val uploadedImageUrl = selectedImageFile?.let { imageFile ->
-                        UserRepo.uploadProfileImage(imageFile)
-                    }
+                    val uploadedImageUrl =
+                        selectedImageFile?.let { imageFile ->
+                            UserRepo.uploadProfileImage(imageFile)
+                        }
 
                     if (selectedImageFile != null && uploadedImageUrl == null) {
                         Toast.makeText(requireContext(), "Image upload failed.", Toast.LENGTH_SHORT).show()
@@ -83,7 +84,7 @@ class SettingsFragment : Fragment() {
                         username = usernameEditText.text.toString().takeIf { it.isNotBlank() },
                         image = uploadedImageUrl ?: currentImagePath,
                         email = emailEditText.text.toString().takeIf { it.isNotBlank() },
-                        password = passwordEditText.text.toString().takeIf { it.isNotBlank() }
+                        password = passwordEditText.text.toString().takeIf { it.isNotBlank() },
                     )
 
                     selectedImageFile = null
@@ -91,14 +92,14 @@ class SettingsFragment : Fragment() {
                 }
             }
         }
-
     }
 
     private fun openGalleryPicker() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "image/*"
-            addCategory(Intent.CATEGORY_OPENABLE)
-        }
+        val intent =
+            Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "image/*"
+                addCategory(Intent.CATEGORY_OPENABLE)
+            }
         @Suppress("DEPRECATION")
         startActivityForResult(Intent.createChooser(intent, "Select image"), REQUEST_PICK_IMAGE)
     }
@@ -110,7 +111,11 @@ class SettingsFragment : Fragment() {
     }
 
     @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -139,14 +144,16 @@ class SettingsFragment : Fragment() {
 
     private fun copyUriToCache(uri: Uri): File? {
         val context = requireContext()
-        val extension = context.contentResolver.getType(uri)?.let {
-            MimeTypeMap.getSingleton().getExtensionFromMimeType(it)
-        } ?: "jpg"
+        val extension =
+            context.contentResolver.getType(uri)?.let {
+                MimeTypeMap.getSingleton().getExtensionFromMimeType(it)
+            } ?: "jpg"
 
-        val outputFile = File(
-            File(context.cacheDir, "profile_images").apply { mkdirs() },
-            "selected_${System.currentTimeMillis()}.$extension"
-        )
+        val outputFile =
+            File(
+                File(context.cacheDir, "profile_images").apply { mkdirs() },
+                "selected_${System.currentTimeMillis()}.$extension",
+            )
 
         return try {
             context.contentResolver.openInputStream(uri)?.use { input ->
@@ -161,10 +168,11 @@ class SettingsFragment : Fragment() {
     }
 
     private fun saveBitmapToCache(bitmap: Bitmap): File? {
-        val outputFile = File(
-            File(requireContext().cacheDir, "profile_images").apply { mkdirs() },
-            "camera_${System.currentTimeMillis()}.jpg"
-        )
+        val outputFile =
+            File(
+                File(requireContext().cacheDir, "profile_images").apply { mkdirs() },
+                "camera_${System.currentTimeMillis()}.jpg",
+            )
 
         return try {
             outputFile.outputStream().use { output ->
