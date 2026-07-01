@@ -11,7 +11,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class FeedViewModel : ViewModel() {
-
     private val _feed = MutableLiveData<List<Article>>()
     val feed: LiveData<List<Article>> = _feed
 
@@ -56,37 +55,39 @@ class FeedViewModel : ViewModel() {
 
     private fun loadPage(offset: Int) {
         loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-        _isLoading.postValue(true)
-        try {
-            val result = when (feedType) {
-                FeedType.GLOBAL -> ArticlesRepo.getGlobalFeed(offset)
-                FeedType.MY_FEED -> ArticlesRepo.getMyFeed(offset)
-            }
-            if (result != null) {
-                _errorMessage.postValue(null)
-                allArticles.addAll(result)
-                currentOffset = allArticles.size
-                _hasMore.postValue(result.size >= ArticlesRepo.pageSize)
-                _feed.postValue(allArticles.toList())
-            } else {
-                Log.i("FeedViewModel", "loadPage returned null at offset $offset")
-                _hasMore.postValue(false)
-                if (offset == 0) {
-                    _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
-                    _feed.postValue(emptyList())
+        loadJob =
+            viewModelScope.launch {
+                _isLoading.postValue(true)
+                try {
+                    val result =
+                        when (feedType) {
+                            FeedType.GLOBAL -> ArticlesRepo.getGlobalFeed(offset)
+                            FeedType.MY_FEED -> ArticlesRepo.getMyFeed(offset)
+                        }
+                    if (result != null) {
+                        _errorMessage.postValue(null)
+                        allArticles.addAll(result)
+                        currentOffset = allArticles.size
+                        _hasMore.postValue(result.size >= ArticlesRepo.pageSize)
+                        _feed.postValue(allArticles.toList())
+                    } else {
+                        Log.i("FeedViewModel", "loadPage returned null at offset $offset")
+                        _hasMore.postValue(false)
+                        if (offset == 0) {
+                            _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
+                            _feed.postValue(emptyList())
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("FeedViewModel", "loadPage failed at offset $offset", e)
+                    _hasMore.postValue(false)
+                    if (offset == 0) {
+                        _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
+                        _feed.postValue(emptyList())
+                    }
+                } finally {
+                    _isLoading.postValue(false)
                 }
             }
-        } catch (e: Exception) {
-            Log.e("FeedViewModel", "loadPage failed at offset $offset", e)
-            _hasMore.postValue(false)
-            if (offset == 0) {
-                _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
-                _feed.postValue(emptyList())
-            }
-        }finally {
-            _isLoading.postValue(false)
-        }
-        }
     }
 }

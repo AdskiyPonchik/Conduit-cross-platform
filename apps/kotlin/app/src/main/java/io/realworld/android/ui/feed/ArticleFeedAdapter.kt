@@ -15,28 +15,40 @@ import io.realworld.api.models.entities.Article
 class ArticleFeedAdapter(val onArticleClicked: (slug: String) -> Unit) :
     ListAdapter<Article, ArticleFeedAdapter.ArticleViewHolder>(
         object : DiffUtil.ItemCallback<Article>() {
-            override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
+            override fun areItemsTheSame(
+                oldItem: Article,
+                newItem: Article,
+            ): Boolean {
                 return oldItem.slug == newItem.slug
             }
 
-            override fun areContentsTheSame(oldItem: Article, newItem: Article): Boolean {
+            override fun areContentsTheSame(
+                oldItem: Article,
+                newItem: Article,
+            ): Boolean {
                 return oldItem == newItem
             }
-        }
+        },
     ) {
     inner class ArticleViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ArticleViewHolder {
         return ArticleViewHolder(
             parent.context.getSystemService(LayoutInflater::class.java).inflate(
                 R.layout.list_item_article,
                 parent,
-                false
-            )
+                false,
+            ),
         )
     }
 
-    override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ArticleViewHolder,
+        position: Int,
+    ) {
         ListItemArticleBinding.bind(holder.itemView).apply {
             val article = getItem(position)
 
@@ -47,10 +59,6 @@ class ArticleFeedAdapter(val onArticleClicked: (slug: String) -> Unit) :
             avatarImageView.loadImage(article.author.image, true)
 
             root.setOnClickListener { onArticleClicked(article.slug) }
-
         }
-
     }
-
-
 }

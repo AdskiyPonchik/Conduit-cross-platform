@@ -15,12 +15,16 @@ class AuthViewModel : ViewModel() {
     private val _loginError = MutableLiveData<String?>()
     val loginError: LiveData<String?> = _loginError
 
-    fun getCurrentUser(token: String) = viewModelScope.launch {
-        val user = UserRepo.getCurrentUser(token)
-        _user.postValue(user)
-    }
+    fun getCurrentUser(token: String) =
+        viewModelScope.launch {
+            val user = UserRepo.getCurrentUser(token)
+            _user.postValue(user)
+        }
 
-    fun login(email: String, password: String) = viewModelScope.launch {
+    fun login(
+        email: String,
+        password: String,
+    ) = viewModelScope.launch {
         _loginError.postValue(null)
         val user = UserRepo.login(email, password)
         if (user != null) {
@@ -30,7 +34,11 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun signup(username: String, email: String, password: String) = viewModelScope.launch {
+    fun signup(
+        username: String,
+        email: String,
+        password: String,
+    ) = viewModelScope.launch {
         _loginError.postValue(null)
         val user = UserRepo.signup(username, email, password)
         if (user != null) {
@@ -49,7 +57,7 @@ class AuthViewModel : ViewModel() {
         username: String?,
         image: String?,
         email: String?,
-        password: String?
+        password: String?,
     ) = viewModelScope.launch {
         UserRepo.updateUser(bio, username, image, email, password)?.let {
             _user.postValue(it)

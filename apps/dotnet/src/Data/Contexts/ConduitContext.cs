@@ -5,16 +5,16 @@ namespace Realworlddotnet.Data.Contexts;
 
 public class ConduitContext(DbContextOptions<ConduitContext> options) : DbContext(options)
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Article> Articles { get; set; }
-    public DbSet<Comment> Comments { get; set; }
-    public DbSet<Tag> Tags { get; set; }
+    public DbSet<User>? Users { get; set; }
+    public DbSet<Article>? Articles { get; set; }
+    public DbSet<Comment>? Comments { get; set; }
+    public DbSet<Tag>? Tags { get; set; }
 
-    public DbSet<UserLink> FollowedUsers { get; set; }
-    public DbSet<ArticleFavorite> ArticleFavorites { get; set; }
-    public DbSet<SearchCount> SearchCounts { get; set; }
+    public DbSet<UserLink>? FollowedUsers { get; set; }
+    public DbSet<ArticleFavorite>? ArticleFavorites { get; set; }
+    public DbSet<SearchCount>? SearchCounts { get; set; }
 
-    public DbSet<ArticleImage> ArticleImages{get;set;}
+    public DbSet<ArticleImage>? ArticleImages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

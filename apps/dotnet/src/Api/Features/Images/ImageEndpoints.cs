@@ -99,7 +99,7 @@ public static class ImageEndpoints
         if (result != null) { return result; }
 
         var article = await repository.GetArticleBySlugAsync(slug, asNoTracking: false, cancellationToken);
-        
+
         if (article == null)
         {
             return Results.NotFound(new { message = "Article not found" });
@@ -137,7 +137,7 @@ public static class ImageEndpoints
             return Results.BadRequest("No file uploaded.");
         }
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-        
+
         if (!allowedExtensions.Contains(ext))
         {
             return Results.BadRequest("Only .jpg, .jpeg, and .png files are allowed.");

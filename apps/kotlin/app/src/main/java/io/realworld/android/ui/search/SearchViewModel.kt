@@ -11,7 +11,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class SearchViewModel : ViewModel() {
-
     private val _results = MutableLiveData<List<Article>>()
     val results: LiveData<List<Article>> = _results
 
@@ -45,43 +44,44 @@ class SearchViewModel : ViewModel() {
 
     private fun loadPage(offset: Int) {
         loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-        _isLoading.postValue(true)
-        try {
-            val result = ArticlesRepo.searchArticles(currentQuery, offset)
-            if (result != null) {
-                allArticles.addAll(result)
-                currentOffset = allArticles.size
-                _hasMore.postValue(result.size >= ArticlesRepo.pageSize)
-                _results.postValue(allArticles.toList())
-                _errorMessage.postValue(
-                    if (allArticles.isEmpty()) "Keine Artikel gefunden." else null
-                )
-            } else {
-                Log.i("SearchViewModel", "searchArticles returned null at offset $offset")
-                _hasMore.postValue(false)
-                if (offset == 0) {
-                    _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
-                    _results.postValue(emptyList())
+        loadJob =
+            viewModelScope.launch {
+                _isLoading.postValue(true)
+                try {
+                    val result = ArticlesRepo.searchArticles(currentQuery, offset)
+                    if (result != null) {
+                        allArticles.addAll(result)
+                        currentOffset = allArticles.size
+                        _hasMore.postValue(result.size >= ArticlesRepo.pageSize)
+                        _results.postValue(allArticles.toList())
+                        _errorMessage.postValue(
+                            if (allArticles.isEmpty()) "Keine Artikel gefunden." else null,
+                        )
+                    } else {
+                        Log.i("SearchViewModel", "searchArticles returned null at offset $offset")
+                        _hasMore.postValue(false)
+                        if (offset == 0) {
+                            _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
+                            _results.postValue(emptyList())
+                        }
+                    }
+                } catch (e: SecurityException) {
+                    Log.w("SearchViewModel", "search unauthorized for query '$currentQuery'")
+                    _hasMore.postValue(false)
+                    if (offset == 0) {
+                        _errorMessage.postValue("Du musst angemeldet sein, um suchen zu können.")
+                        _results.postValue(emptyList())
+                    }
+                } catch (e: Exception) {
+                    Log.e("SearchViewModel", "search failed for query '$currentQuery' at offset $offset", e)
+                    _hasMore.postValue(false)
+                    if (offset == 0) {
+                        _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
+                        _results.postValue(emptyList())
+                    }
+                } finally {
+                    _isLoading.postValue(false)
                 }
             }
-        } catch (e: SecurityException) {
-            Log.w("SearchViewModel", "search unauthorized for query '$currentQuery'")
-            _hasMore.postValue(false)
-            if (offset == 0) {
-                _errorMessage.postValue("Du musst angemeldet sein, um suchen zu können.")
-                _results.postValue(emptyList())
-            }
-        } catch (e: Exception) {
-            Log.e("SearchViewModel", "search failed for query '$currentQuery' at offset $offset", e)
-            _hasMore.postValue(false)
-            if (offset == 0) {
-                _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
-                _results.postValue(emptyList())
-            }
-        }finally {
-            _isLoading.postValue(false)
-        }
-        }
     }
 }

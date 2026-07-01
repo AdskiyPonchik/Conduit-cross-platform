@@ -21,5 +21,6 @@ exec:
   script:
     - cd apps/dotnet
     - dotnet restore
+    - dotnet format --verify-no-changes
     - dotnet build --no-restore --configuration Release
     - dotnet test --no-build --no-restore --configuration Release --logger "trx;LogFileName=test-results.trx"
