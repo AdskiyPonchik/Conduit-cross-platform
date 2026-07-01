@@ -49,7 +49,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SupportNonNullableReferenceTypes();
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "realworlddotnet", Version = "v1" });
-    
+
     // Add Token Authentication (RealWorld spec)
     c.AddSecurityDefinition("Token", new OpenApiSecurityScheme
     {
@@ -59,7 +59,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Token"
     });
-    
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {

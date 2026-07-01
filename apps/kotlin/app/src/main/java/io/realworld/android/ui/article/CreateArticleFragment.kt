@@ -31,16 +31,18 @@ class CreateArticleFragment: Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
-        _binding= FragmentCreateArticleBinding.inflate(layoutInflater,container,false)
-        articleViewModel= ViewModelProvider(this).get(ArticleViewModel::class.java)
-
+        _binding = FragmentCreateArticleBinding.inflate(layoutInflater, container, false)
+        articleViewModel = ViewModelProvider(this).get(ArticleViewModel::class.java)
 
         return _binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding?.apply {
@@ -82,7 +84,7 @@ class CreateArticleFragment: Fragment() {
                         tagList = tags,
                         images = null
                 )
-                Toast.makeText(requireContext(),"Article Published",Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Article Published", Toast.LENGTH_SHORT).show()
             }
 
             renderPreview(articleBodyTv.text?.toString().orEmpty())

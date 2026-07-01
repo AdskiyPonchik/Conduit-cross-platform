@@ -17,20 +17,22 @@ object ArticlesRepo {
 
     val pageSize = 20
 
-    suspend fun getGlobalFeed(offset: Int = 0) =
-        withRetry { api.getArticles(limit = pageSize, offset = offset) }.body()?.articles
+    suspend fun getGlobalFeed(offset: Int = 0) = withRetry { api.getArticles(limit = pageSize, offset = offset) }.body()?.articles
 
-    suspend fun getMyFeed(offset: Int = 0) =
-        withRetry { authApi.getFeedArticles(limit = pageSize, offset = offset) }.body()?.articles
+    suspend fun getMyFeed(offset: Int = 0) = withRetry { authApi.getFeedArticles(limit = pageSize, offset = offset) }.body()?.articles
 
-    suspend fun searchArticles(query: String, offset: Int = 0): List<Article>? {
-        val response = withRetry {
-            authApi.searchArticles(
-                query = query.trim().replace(" ", "+"),
-                limit = pageSize,
-                offset = offset
-            )
-        }
+    suspend fun searchArticles(
+        query: String,
+        offset: Int = 0,
+    ): List<Article>? {
+        val response =
+            withRetry {
+                authApi.searchArticles(
+                    query = query.trim().replace(" ", "+"),
+                    limit = pageSize,
+                    offset = offset,
+                )
+            }
         if (response.code() == 401) throw SecurityException("Nicht autorisiert")
         return response.body()?.articles
     }
@@ -51,8 +53,6 @@ object ArticlesRepo {
                 tagList = tagList,
                 images = images
             )
-        )
-        )
 
         return response.body()?.article
     }

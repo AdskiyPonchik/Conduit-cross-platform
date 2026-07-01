@@ -15,7 +15,6 @@ import io.realworld.android.extensions.timeStamp
 import io.realworld.api.ConduitClient
 
 class ArticleFragment : Fragment() {
-
     private var _binding: FragmentArticleBinding? = null
     lateinit var articleViewModel: ArticleViewModel
     private lateinit var commentAdapter: CommentAdapter
@@ -24,7 +23,7 @@ class ArticleFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         articleViewModel = ViewModelProvider(this).get(ArticleViewModel::class.java)
         _binding = FragmentArticleBinding.inflate(inflater, container, false)
@@ -45,7 +44,10 @@ class ArticleFragment : Fragment() {
         return _binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         articleViewModel.article.observe(viewLifecycleOwner) { article ->
@@ -75,8 +77,6 @@ class ArticleFragment : Fragment() {
             errorMsg ?: return@observe
             android.widget.Toast.makeText(requireContext(), errorMsg, android.widget.Toast.LENGTH_LONG).show()
         }
-
-
     }
 
     override fun onDestroyView() {

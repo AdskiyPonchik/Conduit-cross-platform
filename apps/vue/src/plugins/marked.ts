@@ -1,4 +1,3 @@
-/* eslint-disable antfu/consistent-list-newline */
 import insane from 'insane'
 import { marked } from 'marked'
 

@@ -24,38 +24,45 @@ class ArticleViewModel : ViewModel() {
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
-    fun fetchArticle(slug: String) = viewModelScope.launch {
-        repeat(3) { attempt ->
-            try {
-                val response = api.getArticleBySlug(slug)
-                val fetchedArticle = response.body()?.article
-                if (fetchedArticle != null) {
-                    _article.postValue(fetchedArticle)
-                    _error.postValue(null)
-                    return@launch
-                } else {
-                    Log.w("ArticleViewModel", "fetchArticle returned null article (attempt ${attempt + 1})")
-                    if (attempt == 2) _error.postValue("Artikel konnte nicht geladen werden.")
-                    else delay(500L * (attempt + 1))
+    fun fetchArticle(slug: String) =
+        viewModelScope.launch {
+            repeat(3) { attempt ->
+                try {
+                    val response = api.getArticleBySlug(slug)
+                    val fetchedArticle = response.body()?.article
+                    if (fetchedArticle != null) {
+                        _article.postValue(fetchedArticle)
+                        _error.postValue(null)
+                        return@launch
+                    } else {
+                        Log.w("ArticleViewModel", "fetchArticle returned null article (attempt ${attempt + 1})")
+                        if (attempt == 2) {
+                            _error.postValue("Artikel konnte nicht geladen werden.")
+                        } else {
+                            delay(500L * (attempt + 1))
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("ArticleViewModel", "fetchArticle failed (attempt ${attempt + 1})", e)
+                    if (attempt == 2) {
+                        _error.postValue("Fehler beim Laden des Artikels: ${e.localizedMessage}")
+                    } else {
+                        delay(500L * (attempt + 1))
+                    }
                 }
-            } catch (e: Exception) {
-                Log.e("ArticleViewModel", "fetchArticle failed (attempt ${attempt + 1})", e)
-                if (attempt == 2) _error.postValue("Fehler beim Laden des Artikels: ${e.localizedMessage}")
-                else delay(500L * (attempt + 1))
             }
         }
-    }
 
-    fun fetchComments(slug: String) = viewModelScope.launch {
-        try {
-            val response = api.getComments(slug)
-            _comments.postValue(response.body()?.comments ?: emptyList())
-        } catch (e: Exception) {
-            Log.e("ArticleViewModel", "fetchComments failed", e)
-            _comments.postValue(emptyList())
+    fun fetchComments(slug: String) =
+        viewModelScope.launch {
+            try {
+                val response = api.getComments(slug)
+                _comments.postValue(response.body()?.comments ?: emptyList())
+            } catch (e: Exception) {
+                Log.e("ArticleViewModel", "fetchComments failed", e)
+                _comments.postValue(emptyList())
+            }
         }
-    }
-
 
     fun createArticle(
         title:String,

@@ -21,6 +21,12 @@ interface ConduitAuthAPI {
         @Body userUpdateRequest: UserUpdateRequest
     ): Response<UserResponse>
 
+    @Multipart
+    @POST("images")
+    suspend fun uploadImage(
+        @Part image: MultipartBody.Part
+    ): Response<ResponseBody>
+
     @GET("profiles/{username}")
     suspend fun getProfile(
         @Path("username") username: String

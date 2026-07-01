@@ -1,0 +1,8 @@
+[*.cs]
+
+# Suppress compiler warning for using obsolete/deprecated methods
+dotnet_diagnostic.CS0612.severity = none
+
+# Suppress Sonar analyzer warnings regarding deprecated code reminders
+dotnet_diagnostic.S1133.severity = none
+dotnet_diagnostic.S1123.severity = none
