@@ -11,6 +11,6 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.superfences 
 nav:
-  - Übersicht: index.md
-  - Aufgabe 2 - Passwort-Bug & E2E-Tests: aufgabe2.md
-  - Aufgabe 4 - Bild-Upload & Validierung: aufgabe4.md
+  - Übersicht: milestone3/index.md
+  - Aufgabe 2 - Passwort-Bug & E2E-Tests: milestone3/aufgabe2.md
+  - Aufgabe 4 - Bild-Upload & Validierung: milestone3/aufgabe4.md
