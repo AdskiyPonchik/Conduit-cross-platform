@@ -17,9 +17,13 @@ object ArticlesRepo {
 
     val pageSize = 20
 
-    suspend fun getGlobalFeed(offset: Int = 0) = withRetry { api.getArticles(limit = pageSize, offset = offset) }.body()?.articles
+    suspend fun getGlobalFeed(offset: Int = 0) = withRetry {
+        api.getArticles(limit = pageSize, offset = offset)
+    }.body()?.articles
 
-    suspend fun getMyFeed(offset: Int = 0) = withRetry { authApi.getFeedArticles(limit = pageSize, offset = offset) }.body()?.articles
+    suspend fun getMyFeed(offset: Int = 0) = withRetry {
+        authApi.getFeedArticles(limit = pageSize, offset = offset)
+    }.body()?.articles
 
     suspend fun searchArticles(
         query: String,
@@ -46,13 +50,15 @@ object ArticlesRepo {
     ) : Article? {
         val response =authApi.createArticle(
             UpsertArticleRequest(
-            ArticleData(
-                title=title,
-                description = description,
-                body = body,
-                tagList = tagList,
-                images = images
+                ArticleData(
+                    title=title,
+                    description = description,
+                    body = body,
+                    tagList = tagList,
+                    images = images
+                )
             )
+        )
 
         return response.body()?.article
     }
