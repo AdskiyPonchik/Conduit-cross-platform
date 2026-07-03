@@ -42,6 +42,7 @@ exec:
     - cd ../kotlin && chmod +x gradlew
   script:
     - cd ../kotlin
+    - ./gradlew ktlintCheck
     - ./gradlew build -x test
     - ./gradlew test
     

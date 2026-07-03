@@ -22,7 +22,7 @@ class SearchResultFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         viewModel = ViewModelProvider(this).get(SearchViewModel::class.java)
         feedAdapter = ArticleFeedAdapter { openArticle(it) }
@@ -32,23 +32,32 @@ class SearchResultFragment : Fragment() {
         _binding?.feedRecyclerView?.layoutManager = layoutManager
         _binding?.feedRecyclerView?.adapter = feedAdapter
 
-        _binding?.feedRecyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0) {
-                    val lastVisible = layoutManager.findLastVisibleItemPosition()
-                    val total = layoutManager.itemCount
-                    if (lastVisible >= total - 5) {
-                        viewModel.loadMore()
+        _binding?.feedRecyclerView?.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(
+                    recyclerView: RecyclerView,
+                    dx: Int,
+                    dy: Int,
+                ) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (dy > 0) {
+                        val lastVisible = layoutManager.findLastVisibleItemPosition()
+                        val total = layoutManager.itemCount
+                        if (lastVisible >= total - 5) {
+                            viewModel.loadMore()
+                        }
                     }
                 }
-            }
-        })
+            },
+        )
 
         return _binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val query = arguments?.getString("query") ?: ""
         viewModel.results.observe(viewLifecycleOwner) {
@@ -65,8 +74,8 @@ class SearchResultFragment : Fragment() {
         findNavController().navigate(
             R.id.action_search_openArticle,
             bundleOf(
-                resources.getString(R.string.arg_article_id) to articleId
-            )
+                resources.getString(R.string.arg_article_id) to articleId,
+            ),
         )
     }
 

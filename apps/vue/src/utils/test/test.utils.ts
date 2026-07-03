@@ -182,7 +182,6 @@ export function setupMockServer(...listeners: Listener[]) {
       ? ['all', args[0]] // ['all', path]
       : args.length === 2 && typeof args[1] === 'boolean'
         ? ['all', args[0], args[1]] // ['all', path, flush]
-        // eslint-disable-next-line unicorn/no-nested-ternary
         : args.length === 2
           ? [args[0], args[1]] // [method, path]
           : args // [method, path, flush]

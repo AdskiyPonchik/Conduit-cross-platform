@@ -13,14 +13,13 @@ import io.realworld.android.R
 import io.realworld.android.databinding.FragmentLoginSignupBinding
 
 class LoginFragment : Fragment() {
-
     private var _binding: FragmentLoginSignupBinding? = null
     val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         _binding = FragmentLoginSignupBinding.inflate(inflater, container, false)
         _binding?.usernameEditText?.isVisible = false
@@ -28,7 +27,10 @@ class LoginFragment : Fragment() {
         return _binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding?.apply {
@@ -36,7 +38,7 @@ class LoginFragment : Fragment() {
                 errorTextView.isVisible = false
                 authViewModel.login(
                     emailEditText.text.toString(),
-                    passwordEditText.text.toString()
+                    passwordEditText.text.toString(),
                 )
             }
         }

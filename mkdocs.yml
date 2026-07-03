@@ -1,0 +1,16 @@
+site_name: SDP Group FDMP Project Documentation
+theme:
+  name: mkdocs
+  color_mode: auto
+  user_color_mode_toggle: false
+use_directory_urls: false
+docs_dir: docs/mkdocs/doc-source
+site_dir: docs/mkdocs/docs
+markdown_extensions:
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences 
+nav:
+  - Übersicht: index.md
+  - Aufgabe 2 - Passwort-Bug & E2E-Tests: aufgabe2.md
+  - Aufgabe 4 - Bild-Upload & Validierung: aufgabe4.md

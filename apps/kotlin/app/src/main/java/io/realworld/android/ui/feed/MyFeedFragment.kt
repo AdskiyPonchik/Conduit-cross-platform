@@ -14,7 +14,6 @@ import io.realworld.android.R
 import io.realworld.android.databinding.FragmentFeedBinding
 
 class MyFeedFragment : Fragment() {
-
     private var _binding: FragmentFeedBinding? = null
     private lateinit var viewModel: FeedViewModel
     private lateinit var feedAdapter: ArticleFeedAdapter
@@ -22,7 +21,7 @@ class MyFeedFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         viewModel = ViewModelProvider(this).get(FeedViewModel::class.java)
         feedAdapter = ArticleFeedAdapter { openArticle(it) }
@@ -32,23 +31,32 @@ class MyFeedFragment : Fragment() {
         _binding?.feedRecyclerView?.layoutManager = layoutManager
         _binding?.feedRecyclerView?.adapter = feedAdapter
 
-        _binding?.feedRecyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0) {
-                    val lastVisible = layoutManager.findLastVisibleItemPosition()
-                    val total = layoutManager.itemCount
-                    if (lastVisible >= total - 5) {
-                        viewModel.loadMore()
+        _binding?.feedRecyclerView?.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(
+                    recyclerView: RecyclerView,
+                    dx: Int,
+                    dy: Int,
+                ) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (dy > 0) {
+                        val lastVisible = layoutManager.findLastVisibleItemPosition()
+                        val total = layoutManager.itemCount
+                        if (lastVisible >= total - 5) {
+                            viewModel.loadMore()
+                        }
                     }
                 }
-            }
-        })
+            },
+        )
 
         return _binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.fetchMyFeed()
         viewModel.feed.observe(viewLifecycleOwner) {
@@ -64,10 +72,11 @@ class MyFeedFragment : Fragment() {
         findNavController().navigate(
             R.id.action_globalFeed_openArticle,
             bundleOf(
-                resources.getString(R.string.arg_article_id) to articleId
-            )
+                resources.getString(R.string.arg_article_id) to articleId,
+            ),
         )
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
