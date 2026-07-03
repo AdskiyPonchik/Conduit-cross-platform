@@ -22,6 +22,8 @@ data class Article(
     val slug: String,
     @Json(name = "tagList")
     val tagList: List<String>,
+    @Json(name = "images")
+    val images: List<String> = emptyList(),
     @Json(name = "title")
     val title: String,
     @Json(name = "updatedAt")

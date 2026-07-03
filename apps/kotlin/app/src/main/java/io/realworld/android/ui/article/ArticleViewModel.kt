@@ -65,17 +65,28 @@ class ArticleViewModel : ViewModel() {
         }
 
     fun createArticle(
-        title: String?,
-        description: String?,
-        body: String?,
-        tagList: List<String>? = null,
-    ) = viewModelScope.launch {
-        val article =
-            ArticlesRepo.createArticle(
-                title = title,
-                description = description,
-                body = body,
-                tagList = tagList,
-            )
+        title:String,
+        description:String,
+        body:String,
+        tagList:List<String> = emptyList(),
+        images: List<String>? = null
+    ) =viewModelScope.launch {
+        ArticlesRepo.createArticle(
+            title=title,
+            description = description,
+            body=body,
+            tagList = tagList,
+            images = images
+        )
     }
+
+    suspend fun uploadArticleImage(
+        bytes: ByteArray,
+        fileName: String,
+        mimeType: String
+    ): String? {
+        return ArticlesRepo.uploadArticleImage(bytes, fileName, mimeType)
+    }
+
+
 }

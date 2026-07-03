@@ -69,4 +69,16 @@ interface ConduitAuthAPI {
     suspend fun createArticle(
         @Body article: UpsertArticleRequest
     ) :Response<ArticleResponse>
+
+    @Multipart
+    @POST("images")
+    suspend fun uploadArticleImageWithFileField(
+        @Part file: MultipartBody.Part
+    ): Response<ResponseBody>
+
+    @Multipart
+    @POST("images")
+    suspend fun uploadArticleImageWithImageField(
+        @Part image: MultipartBody.Part
+    ): Response<ResponseBody>
 }
