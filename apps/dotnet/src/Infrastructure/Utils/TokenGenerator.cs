@@ -18,9 +18,13 @@ public class TokenGenerator : ITokenGenerator
         _rsaSecurityKey = new RsaSecurityKey(privateKey);
     }
 
-    public string CreateToken(string username)
+    public string CreateToken(string username, string roleName)
     {
-        var claims = new[] { new Claim(JwtRegisteredClaimNames.Sub, username) };
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, username),
+            new Claim(ClaimTypes.Role, roleName)
+        };
 
         var handler = new JwtSecurityTokenHandler();
         var token = new JwtSecurityToken(

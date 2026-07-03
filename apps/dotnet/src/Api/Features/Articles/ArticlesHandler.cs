@@ -35,7 +35,8 @@ public class ArticlesHandler(IConduitRepository repository) : IArticlesHandler
             throw new ProblemDetailsException(422, "ArticleNotFound");
         }
 
-        if (username != article.Author.Username)
+        var currentUser = await repository.GetUserByUsernameAsync(username, cancellationToken);
+        if (currentUser.Username != article.Author.Username && currentUser.Role != UserRole.Admin)
         {
             throw new ProblemDetailsException(403, $"{username} is not the author");
         }
@@ -55,7 +56,8 @@ public class ArticlesHandler(IConduitRepository repository) : IArticlesHandler
                           Detail = $"Slug: {slug}"
                       });
 
-        if (username != article.Author.Username)
+        var currentUser = await repository.GetUserByUsernameAsync(username, cancellationToken);
+        if (currentUser.Username != article.Author.Username && currentUser.Role != UserRole.Admin)
         {
             throw new ProblemDetailsException(403, $"{username} is not the author");
         }
@@ -128,7 +130,8 @@ public class ArticlesHandler(IConduitRepository repository) : IArticlesHandler
                       });
 
 
-        if (comment.Author.Username != username)
+        var currentUser = await repository.GetUserByUsernameAsync(username, cancellationToken);
+        if (comment.Author.Username != username && currentUser.Role != UserRole.Moderator && currentUser.Role != UserRole.Admin)
         {
             throw new ProblemDetailsException(new HttpValidationProblemDetails
             {

@@ -13,6 +13,7 @@ public static class UserEndpoints
 
         userGroup.MapGet("/", GetUser);
         userGroup.MapPut("/", UpdateUser);
+        userGroup.MapPut("/{targetUsername}/role", UpdateUserRole);
 
         usersGroup.MapPost("/", CreateUser);
         usersGroup.MapPost("/login", LoginUser);
@@ -60,6 +61,22 @@ public static class UserEndpoints
 
         var username = claimsPrincipal.GetUsername();
         var user = await userHandler.UpdateAsync(username, request.User, cancellationToken);
+        return Results.Ok(new UserEnvelope<UserDto>(user));
+    }
+
+    private static async Task<IResult> UpdateUserRole(
+        string targetUsername,
+        IUserHandler userHandler,
+        ClaimsPrincipal claimsPrincipal,
+        UserEnvelope<RoleUpdateDto> request,
+        CancellationToken cancellationToken)
+    {
+        if (!claimsPrincipal.HasRole(UserRole.Admin.ToString()))
+        {
+            return Results.Json(new { message = "Forbidden" }, statusCode: 403);
+        }
+
+        var user = await userHandler.UpdateRoleAsync(targetUsername, request.User.Role, cancellationToken);
         return Results.Ok(new UserEnvelope<UserDto>(user));
     }
 

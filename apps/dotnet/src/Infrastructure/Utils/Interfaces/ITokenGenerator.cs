@@ -2,5 +2,5 @@
 
 public interface ITokenGenerator
 {
-    public string CreateToken(string username);
+    public string CreateToken(string username, string roleName);
 }

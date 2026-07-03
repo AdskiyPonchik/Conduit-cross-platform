@@ -3,6 +3,13 @@ using Realworlddotnet.Core.Dto;
 
 namespace Realworlddotnet.Core.Entities;
 
+public enum UserRole
+{
+    User = 0,
+    Moderator = 1,
+    Admin = 2
+}
+
 public class User
 {
     public User()
@@ -30,6 +37,8 @@ public class User
 
     [MaxLength(200)]
     public string Image { get; set; } = string.Empty;
+
+    public UserRole Role { get; set; } = UserRole.User;
 
     public ICollection<ArticleFavorite>? ArticleFavorites { get; set; }
     public ICollection<Comment>? ArticleComments { get; set; }

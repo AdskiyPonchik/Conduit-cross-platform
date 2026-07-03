@@ -24,4 +24,6 @@ public record UpdatedUserDto(string? Username, string? Email, string? Bio, strin
     }
 }
 
-public record UserDto(string Username, string Email, string Token, string Bio, string Image);
+public record UserDto(string Username, string Email, string Token, string Bio, string Image, string Role);
+
+public record RoleUpdateDto([Required] string Role);
