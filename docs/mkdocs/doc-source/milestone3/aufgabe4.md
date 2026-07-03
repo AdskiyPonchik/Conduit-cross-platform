@@ -14,6 +14,16 @@ Zusammenfassung der Konzeptionierung und Integration eines lokalen Datei-Uploads
 2. **FormData und absolute Adressierung:** In der Methode `onSubmit()` werden die Binärdaten bei Vorhandensein in ein `FormData`-Objekt verpackt. Der Parameter-Schlüssel wird exakt als `'file'` deklariert, um mit der Schnittstelle des Backends zu harmonieren. Der asynchrone Request wird via `fetch` an die absolute, über `CONFIG.API_HOST` aufgelöste Backend-URL geschickt.
 3. **Zuweisung und Button-Aktivierung:** Nach erfolgreichem Upload wird die vom Server generierte Bild-URL extrahiert und `form.image` zugewiesen. Die Computed Property `isButtonDisabled` wurde so erweitert, dass der Update-Button sofort aktiv und anklickbar wird, sobald das reaktive Objekt `selectedFile` nicht mehr `null` ist.
 
+## Backend changes
+* **Endpoint:** `POST /api/images/`.
+* **Access:** Requires authorization.
+* **Validation:** Accepts only `.jpg`, `.jpeg`, and `.png` extensions.
+* **Storage & Overwrite Logic:**
+  * To maintain a consistent URL, the system checks if the user currently has a profile image containing `/api/images/`. 
+  * If true, it extracts the existing filename and overwrites the physical file.
+  * If false, it generates a new filename following the pattern `profile_{username}{ext}`.
+* **Database:** Updates the user's profile with the generated absolute URL.
+
 ---
 
 ## Feature 2: Alphanumerische Zeichen-Sperre für Benutzernamen

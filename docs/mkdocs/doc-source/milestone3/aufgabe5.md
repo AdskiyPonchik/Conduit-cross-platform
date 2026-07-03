@@ -39,3 +39,17 @@ Diese Dokumentation beschreibt alle Anpassungen im Vue-Frontend, die zur Impleme
 * **Sicherstellung der Datenkonsistenz & Bereinigung:**
   * **Kopier-Funktion:** Jedes hochgeladene Bild wird unterhalb des Uploaders gelistet. Ein Klick auf „Kopieren“ legt die fertige Markdown-Syntax `![alt text](URL "Title")` direkt in die Zwischenablage des Nutzers, damit der Link bequem im Text eingefügt werden kann.
   * **Entfernung der Lösch-Funktion:** Da das Backend keinen Endpunkt zum Löschen von Bildern anbietet und Modifikationen dort ausgeschlossen sind, wurde die `removeImageLink`-Funktion sowie der dazugehörige „Entfernen“-Button restlos aus dem Code entfernt, um Verwirrungen und Dateninkonsistenzen (Bild in UI weg, aber in der DB vorhanden) zu vermeiden.
+
+  ## Backend Changes
+* **Endpoint:** `POST /api/images/articles/{slug}`.
+* **Access:** Requires authorization. The system verifies that the authenticated user is the author of the specified article; a mismatch results in a `403 Forbidden` response.
+* **Validation:** Accepts only `.jpg`, `.jpeg`, and `.png` extensions.
+* **Storage Logic:** 
+  * Each uploaded file receives a unique GUID-based filename (`{Guid.NewGuid()}{ext}`) to support multiple images per article without overwriting.
+* **Database Architecture:**
+  * A new `ArticleImages` table (`DbSet<ArticleImage>`) was introduced.
+  * The `ArticleImage` entity structure includes an `Id` (Guid), a `Url` (string with a maximum length of 2000 characters), and an `ArticleId` (Guid) acting as a foreign key to the `Articles` table.
+  * A one-to-many relationship was established, allowing the `Article` entity to hold a collection of `ArticleImage` objects.
+* **Data Retrieval:**
+  * The `ConduitRepository` was updated to eagerly load associated images using `.Include(x => x.Images)` during database queries.
+  * The `ArticleResponse` model and `ArticlesMapper` were extended to expose a `List<string> Images`, mapping the related image URLs into the API JSON response.
