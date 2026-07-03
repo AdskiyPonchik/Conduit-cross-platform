@@ -30,8 +30,8 @@ class SearchEspressoTest {
     }
 
     private lateinit var scenario: ActivityScenario<MainActivity>
-    private val testEmail = "test@test.com"
-    private val testPassword = "12345678"
+    private val testEmail = "jonas.lambert@example.com"
+    private val testPassword = "ou8123"
 
     @Before
     fun setUp() {
