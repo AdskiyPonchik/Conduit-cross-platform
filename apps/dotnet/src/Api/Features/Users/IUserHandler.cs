@@ -12,4 +12,6 @@ public interface IUserHandler
     public Task<UserDto> LoginAsync(LoginUserDto login, CancellationToken cancellationToken);
 
     public Task<UserDto> GetAsync(string username, CancellationToken cancellationToken);
+
+    public Task<UserDto> UpdateRoleAsync(string targetUsername, string roleName, CancellationToken cancellationToken);
 }

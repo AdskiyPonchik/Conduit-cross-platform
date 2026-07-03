@@ -28,6 +28,7 @@ public static class ImageEndpoints
         var imageGroup = app.MapGroup("images").RequireAuthorization().WithTags("Images");
         imageGroup.MapPost("/", UploadImage).DisableAntiforgery();
         imageGroup.MapPost("/articles/{slug}", UploadArticleImage).DisableAntiforgery();
+        imageGroup.MapDelete("/profiles/{username}", DeleteProfileImage);
     }
 
     private static async Task<IResult> UploadImage(
@@ -105,7 +106,8 @@ public static class ImageEndpoints
             return Results.NotFound(new { message = "Article not found" });
         }
         var currentUsername = claimsPrincipal.GetUsername();
-        if (article.Author.Username != currentUsername)
+        var currentUser = await repository.GetUserByUsernameAsync(currentUsername, cancellationToken);
+        if (article.Author.Username != currentUsername && currentUser.Role != UserRole.Admin)
         {
             return Results.Json(new { message = "Forbidden: You are not the author of this article." }, statusCode: 403);
         }
@@ -128,6 +130,35 @@ public static class ImageEndpoints
         await repository.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(new { image = imageUrl });
+    }
+
+    private static async Task<IResult> DeleteProfileImage(
+        string username,
+        [FromServices] IUserHandler userHandler,
+        [FromServices] IHostEnvironment env,
+        ClaimsPrincipal claimsPrincipal,
+        CancellationToken cancellationToken)
+    {
+        if (!claimsPrincipal.HasRole(UserRole.Admin.ToString()))
+        {
+            return Results.Json(new { message = "Forbidden" }, statusCode: 403);
+        }
+
+        var user = await userHandler.GetAsync(username, cancellationToken);
+        var imageUrl = user.Image;
+        if (!string.IsNullOrWhiteSpace(imageUrl) && imageUrl.Contains("/api/images/", StringComparison.OrdinalIgnoreCase))
+        {
+            var fileName = Path.GetFileName(new Uri(imageUrl).LocalPath);
+            var imagesDir = Path.Combine(env.ContentRootPath, "images");
+            var filePath = Path.Combine(imagesDir, fileName);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        await userHandler.UpdateAsync(username, new UpdatedUserDto(null, null, null, string.Empty, null), cancellationToken);
+        return Results.Ok(new { message = "Profile image removed" });
     }
 
     private static IResult? ValidateUploadedFile(IFormFile file, string? ext)

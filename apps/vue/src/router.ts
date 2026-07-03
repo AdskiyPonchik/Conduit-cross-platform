@@ -1,6 +1,6 @@
 import type { RouteParams, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { isAuthorized } from './store/user'
+import { isAuthorized, userStorage } from './store/user'
 
 export type AppRouteNames =
   | 'global-feed'
@@ -15,6 +15,7 @@ export type AppRouteNames =
   | 'profile'
   | 'profile-favorites'
   | 'settings'
+  | 'admin'
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -79,6 +80,12 @@ export const routes: RouteRecordRaw[] = [
     name: 'settings',
     path: '/settings',
     component: () => import('./pages/Settings.vue'),
+  },
+  {
+    name: 'admin',
+    path: '/admin',
+    component: () => import('./pages/Admin.vue'),
+    beforeEnter: () => (isAuthorized() && (userStorage.get() as any)?.role === 'Admin') || { name: 'global-feed' },
   },
 ]
 export const router = createRouter({

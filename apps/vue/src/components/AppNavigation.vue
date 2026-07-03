@@ -7,7 +7,6 @@
       >
         conduit
       </AppLink>
-
       <ul class="nav navbar-nav pull-xs-right">
         <li
           v-if="isAuthorized"
@@ -64,7 +63,7 @@ import type { RouteParams } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import type { AppRouteNames } from 'src/router'
 import { router } from 'src/router'
-import { useUserStore } from 'src/store/user'
+import { useUserStore } from '../store/user'
 
 interface NavLink {
   name: AppRouteNames
@@ -75,10 +74,8 @@ interface NavLink {
 }
 
 const { user, isAuthorized } = storeToRefs(useUserStore())
-
 const username = computed(() => user.value?.username)
 const displayStatus = computed(() => username.value ? 'authorized' : 'anonym')
-
 const searchInput = ref('')
 
 function onSearch() {
@@ -125,7 +122,18 @@ const allNavLinks = computed<NavLink[]>(() => [
   },
 ])
 
-const navLinks = computed(() => allNavLinks.value.filter(
-  l => l.display === displayStatus.value || l.display === 'all',
-))
+const navLinks = computed(() => {
+  const links = allNavLinks.value.filter(
+    l => l.display === displayStatus.value || l.display === 'all',
+  )
+  if (isAuthorized.value && (user.value as any)?.role === 'Admin') {
+    links.push({
+      name: 'admin',
+      title: 'Admin',
+      display: 'authorized',
+      icon: 'ion-person-stalker'
+    })
+  }
+  return links
+})
 </script>

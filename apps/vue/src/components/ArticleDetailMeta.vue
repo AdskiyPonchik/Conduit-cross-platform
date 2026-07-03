@@ -6,7 +6,6 @@
     >
       <img :alt="article.author.username" :src="article.author.image">
     </AppLink>
-
     <div class="info">
       <AppLink
         class="author"
@@ -15,10 +14,8 @@
       >
         {{ article.author.username }}
       </AppLink>
-
       <span class="date">{{ (new Date(article.createdAt)).toLocaleDateString() }}</span>
     </div>
-
     <button
       v-if="displayFollowButton"
       class="btn btn-sm btn-outline-secondary space"
@@ -29,7 +26,6 @@
       <i class="ion-plus-round space" />
       {{ article.author.following ? "Unfollow" : "Follow" }} {{ article.author.username }}
     </button>
-
     <button
       class="btn btn-sm space"
       :class="[article.favorited ? 'btn-primary' : 'btn-outline-primary']"
@@ -41,7 +37,6 @@
       {{ article.favorited ? 'Unfavorite' : 'Favorite' }} Article
       <span class="counter">({{ article.favoritesCount }})</span>
     </button>
-
     <AppLink
       v-if="displayEditButton"
       class="btn btn-outline-secondary btn-sm space"
@@ -51,9 +46,8 @@
     >
       <i class="ion-edit space" /> Edit Article
     </AppLink>
-
     <button
-      v-if="displayEditButton"
+      v-if="displayDeleteButton"
       class="btn btn-outline-danger btn-sm"
       aria-label="Delete article"
       @click="onDelete"
@@ -76,6 +70,7 @@ import { useUserStore } from 'src/store/user'
 interface Props {
   article: Article
 }
+
 interface Emits {
   (e: 'update', article: Article): void
 }
@@ -85,7 +80,9 @@ const emit = defineEmits<Emits>()
 
 const { article } = toRefs(props)
 const { user, isAuthorized } = storeToRefs(useUserStore())
+
 const displayEditButton = computed(() => isAuthorized.value && user.value?.username === article.value.author.username)
+const displayDeleteButton = computed(() => isAuthorized.value && (user.value?.username === article.value.author.username || (user.value as any)?.role === 'Admin'))
 const displayFollowButton = computed(() => isAuthorized.value && user.value?.username !== article.value.author.username)
 
 const { favoriteProcessGoing, favoriteArticle } = useFavoriteArticle({

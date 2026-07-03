@@ -203,6 +203,9 @@ namespace Realworlddotnet.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Username");
 
                     b.HasIndex("Email")

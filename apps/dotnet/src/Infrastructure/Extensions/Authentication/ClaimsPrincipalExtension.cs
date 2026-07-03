@@ -8,4 +8,9 @@ public static class ClaimsPrincipalExtension
     {
         return claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
     }
+
+    public static bool HasRole(this ClaimsPrincipal claimsPrincipal, string roleName)
+    {
+        return claimsPrincipal.IsInRole(roleName);
+    }
 }

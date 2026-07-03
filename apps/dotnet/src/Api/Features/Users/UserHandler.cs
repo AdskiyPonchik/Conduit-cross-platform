@@ -1,4 +1,5 @@
 ﻿using Realworlddotnet.Core.Dto;
+using Realworlddotnet.Core.Entities;
 using Realworlddotnet.Core.Repositories;
 using Realworlddotnet.Infrastructure.Utils.Interfaces;
 
@@ -18,8 +19,8 @@ public class UserHandler(
         };
         await repository.AddUserAsync(user);
         await repository.SaveChangesAsync(cancellationToken);
-        var token = tokenGenerator.CreateToken(user.Username);
-        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image);
+        var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
+        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image, user.Role.ToString());
     }
 
     public async Task<UserDto> UpdateAsync(
@@ -31,8 +32,8 @@ public class UserHandler(
             : null;
         user.UpdateUser(updatedUser with { Password = hashedPassword });
         await repository.SaveChangesAsync(cancellationToken);
-        var token = tokenGenerator.CreateToken(user.Username);
-        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image);
+        var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
+        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image, user.Role.ToString());
     }
 
     public async Task<UserDto> LoginAsync(LoginUserDto login, CancellationToken cancellationToken)
@@ -51,14 +52,28 @@ public class UserHandler(
             throw new ProblemDetailsException(422, "Incorrect Credentials");
         }
 
-        var token = tokenGenerator.CreateToken(user.Username);
-        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image);
+        var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
+        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image, user.Role.ToString());
     }
 
     public async Task<UserDto> GetAsync(string username, CancellationToken cancellationToken)
     {
         var user = await repository.GetUserByUsernameAsync(username, cancellationToken);
-        var token = tokenGenerator.CreateToken(user.Username);
-        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image);
+        var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
+        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image, user.Role.ToString());
+    }
+
+    public async Task<UserDto> UpdateRoleAsync(string targetUsername, string roleName, CancellationToken cancellationToken)
+    {
+        if (!Enum.TryParse<UserRole>(roleName, true, out var role))
+        {
+            throw new ProblemDetailsException(422, $"Invalid role: {roleName}");
+        }
+
+        var user = await repository.GetUserByUsernameAsync(targetUsername, cancellationToken);
+        user.Role = role;
+        await repository.SaveChangesAsync(cancellationToken);
+        var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
+        return new UserDto(user.Username, user.Email, token, user.Bio, user.Image, user.Role.ToString());
     }
 }
