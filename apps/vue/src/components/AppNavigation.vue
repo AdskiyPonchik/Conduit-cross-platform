@@ -125,7 +125,18 @@ const allNavLinks = computed<NavLink[]>(() => [
   },
 ])
 
-const navLinks = computed(() => allNavLinks.value.filter(
-  l => l.display === displayStatus.value || l.display === 'all',
-))
+const navLinks = computed(() => {
+  const links = allNavLinks.value.filter(
+    l => l.display === displayStatus.value || l.display === 'all',
+  )
+  if (isAuthorized.value && user.value?.role === 'Admin') {
+    links.push({
+      name: 'admin',
+      title: 'Admin',
+      display: 'authorized',
+      icon: 'ion-person-stalker',
+    })
+  }
+  return links
+})
 </script>

@@ -85,7 +85,7 @@ const emit = defineEmits<Emits>()
 
 const { article } = toRefs(props)
 const { user, isAuthorized } = storeToRefs(useUserStore())
-const displayEditButton = computed(() => isAuthorized.value && user.value?.username === article.value.author.username)
+const displayEditButton = computed(() => isAuthorized.value && (user.value?.username === article.value.author.username || user.value?.role === 'Admin'))
 const displayFollowButton = computed(() => isAuthorized.value && user.value?.username !== article.value.author.username)
 
 const { favoriteProcessGoing, favoriteArticle } = useFavoriteArticle({

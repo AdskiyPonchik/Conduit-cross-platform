@@ -1,45 +1,57 @@
 <template>
-  <ArticleDetailCommentsForm
-    :article-slug="slug"
-    @add-comment="addComment"
-  />
-
-  <ArticleDetailComment
-    v-for="comment in comments"
-    :key="comment.id"
-    :comment="comment"
-    :username="username"
-    @remove-comment="() => removeComment(comment.id)"
-  />
+  <div class="card">
+    <div class="card-block">
+      <p class="card-text">
+        {{ comment.body }}
+      </p>
+    </div>
+    <div class="card-footer">
+      <AppLink
+        class="comment-author"
+        name="profile"
+        :params="{ username: comment.author.username }"
+      >
+        <img
+          class="comment-author-img"
+          :alt="comment.author.username"
+          :src="comment.author.image"
+        >
+      </AppLink>
+      &nbsp;
+      <AppLink
+        class="comment-author"
+        name="profile"
+        :params="{ username: comment.author.username }"
+      >
+        {{ comment.author.username }}
+      </AppLink>
+      <span class="date-posted">{{ (new Date(comment.createdAt)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) }}</span>
+      <span class="mod-options">
+        <i v-if="showRemove" class="ion-trash-a" @click="$emit('remove')" />
+      </span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { api } from 'src/services'
+import { computed } from 'vue'
 import type { Comment } from 'src/services/api'
 import { useUserStore } from 'src/store/user'
-import ArticleDetailComment from './ArticleDetailComment.vue'
-import ArticleDetailCommentsForm from './ArticleDetailCommentsForm.vue'
 
-const route = useRoute()
-const slug = route.params.slug as string
-
-const { user } = storeToRefs(useUserStore())
-
-const username = computed(() => user.value?.username)
-
-const comments = ref<Comment[]>([])
-
-async function addComment(comment: Comment) {
-  comments.value.unshift(comment)
+interface Props {
+  comment: Comment
 }
 
-async function removeComment(commentId: number) {
-  await api.articles.deleteArticleComment(slug, commentId)
-  comments.value = comments.value.filter(c => c.id !== commentId)
-}
+defineEmits(['remove'])
+const props = defineProps<Props>()
+const userStore = useUserStore()
 
-comments.value = await api.articles.getArticleComments(slug).then(res => res.data.comments)
+const showRemove = computed(() => {
+  if (!userStore.isAuthorized) return false
+  const currentUsername = userStore.user?.username
+  const currentUserRole = userStore.user?.role
+  return currentUsername === props.comment.author.username ||
+         currentUserRole === 'Moderator' ||
+         currentUserRole === 'Admin'
+})
 </script>
