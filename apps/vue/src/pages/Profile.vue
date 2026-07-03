@@ -12,7 +12,6 @@
             </div>
             <template v-else>
               <img
-                v-if="profile.image"
                 class="user-img"
                 :alt="profile.username"
                 :src="profile.image"
@@ -40,9 +39,10 @@
                 {{ profile.following ? "Unfollow" : "Follow" }} {{ profile.username }}
               </button>
               <button
-                v-if="user?.role === 'Admin' && profile.image"
+                v-if="(user as any)?.role === 'Admin' && profile.image"
                 class="btn btn-sm btn-outline-danger action-btn"
-                @click="deleteProfileImage"
+                style="margin-left: 8px;"
+                @click="onDeleteProfileImage"
               >
                 <i class="ion-trash-a space" />
                 Delete Profile Image
@@ -95,22 +95,21 @@ const { user, isAuthorized } = storeToRefs(useUserStore())
 const showEdit = computed<boolean>(() => isAuthorized.value && user.value?.username === username.value)
 const showFollow = computed<boolean>(() => user.value?.username !== username.value)
 
-async function deleteProfileImage() {
-  if (!confirm(`Are you sure you want to delete ${username.value}'s profile picture?`)) return
+async function onDeleteProfileImage() {
+  if (!confirm(`Möchtest du das Profilbild von ${username.value} wirklich löschen?`)) return
   try {
     const response = await fetch(`${CONFIG.API_HOST}/api/images/profiles/${username.value}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Token ${user.value?.token || ''}`,
-      },
+        'Authorization': `Token ${user.value?.token || ''}`
+      }
     })
     if (response.ok) {
       if (profile.value) {
         profile.value.image = ''
       }
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error)
   }
 }

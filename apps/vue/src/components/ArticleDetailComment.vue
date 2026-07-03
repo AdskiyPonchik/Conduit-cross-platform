@@ -5,7 +5,6 @@
         {{ comment.body }}
       </p>
     </div>
-
     <div class="card-footer">
       <AppLink
         class="comment-author"
@@ -18,9 +17,7 @@
           :src="comment.author.image"
         >
       </AppLink>
-
       &nbsp;
-
       <AppLink
         class="comment-author"
         name="profile"
@@ -28,9 +25,7 @@
       >
         {{ comment.author.username }}
       </AppLink>
-
       <span class="date-posted">{{ (new Date(comment.createdAt)).toLocaleDateString('en-US') }}</span>
-
       <span class="mod-options">
         <i
           v-if="showRemove"
@@ -49,6 +44,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Comment } from 'src/services/api'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from 'src/store/user'
 
 interface Props {
   comment: Comment
@@ -60,5 +57,11 @@ const emit = defineEmits<{
   (e: 'remove-comment'): boolean
 }>()
 
-const showRemove = computed(() => props.username !== undefined && props.username === props.comment.author.username)
+const { user, isAuthorized } = storeToRefs(useUserStore())
+
+const showRemove = computed(() => {
+  const isOwner = props.username !== undefined && props.username === props.comment.author.username
+  const hasModOrAdminRights = isAuthorized.value && ((user.value as any)?.role === 'Moderator' || (user.value as any)?.role === 'Admin')
+  return isOwner || hasModOrAdminRights
+})
 </script>

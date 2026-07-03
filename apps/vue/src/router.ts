@@ -85,7 +85,7 @@ export const routes: RouteRecordRaw[] = [
     name: 'admin',
     path: '/admin',
     component: () => import('./pages/Admin.vue'),
-    beforeEnter: () => (isAuthorized() && userStorage.get()?.role === 'Admin') || { name: 'global-feed' },
+    beforeEnter: () => (isAuthorized() && (userStorage.get() as any)?.role === 'Admin') || { name: 'global-feed' },
   },
 ]
 export const router = createRouter({
