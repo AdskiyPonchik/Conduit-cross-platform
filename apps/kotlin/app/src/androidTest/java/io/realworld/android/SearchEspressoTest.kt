@@ -1,14 +1,22 @@
 package io.realworld.android
 
+import android.view.KeyEvent
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.NoMatchingViewException
-import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.pressImeActionButton
+import androidx.test.espresso.action.ViewActions.pressKey
+import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withClassName
+import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.realworld.android.data.ArticlesRepo
@@ -20,7 +28,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import android.view.KeyEvent
 
 @RunWith(AndroidJUnit4::class)
 class SearchEspressoTest {
@@ -153,26 +160,34 @@ class SearchEspressoTest {
     private fun performSearch(query: String) {
         openSearchAction()
 
-        waitForView(allOf(
-            withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
-            isDisplayed()
-        ))
+        waitForView(
+            allOf(
+                withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
+                isDisplayed(),
+            ),
+        )
 
-        onView(allOf(
-            withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
-            isDisplayed()
-        )).perform(replaceText(query), closeSoftKeyboard())
+        onView(
+            allOf(
+                withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
+                isDisplayed(),
+            ),
+        ).perform(replaceText(query), closeSoftKeyboard())
 
         try {
-            onView(allOf(
-                withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
-                isDisplayed()
-            )).perform(pressImeActionButton())
+            onView(
+                allOf(
+                    withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
+                    isDisplayed(),
+                ),
+            ).perform(pressImeActionButton())
         } catch (_: Throwable) {
-            onView(allOf(
-                withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
-                isDisplayed()
-            )).perform(pressKey(KeyEvent.KEYCODE_ENTER))
+            onView(
+                allOf(
+                    withClassName(org.hamcrest.Matchers.endsWith("SearchAutoComplete")),
+                    isDisplayed(),
+                ),
+            ).perform(pressKey(KeyEvent.KEYCODE_ENTER))
         }
 
         waitForView(withText(R.string.menu_search))
@@ -229,7 +244,10 @@ class SearchEspressoTest {
         }
     }
 
-    private fun waitForView(matcher: org.hamcrest.Matcher<android.view.View>, timeoutMs: Long = 8_000) {
+    private fun waitForView(
+        matcher: org.hamcrest.Matcher<android.view.View>,
+        timeoutMs: Long = 8_000,
+    ) {
         val end = System.currentTimeMillis() + timeoutMs
         var lastError: Throwable? = null
         while (System.currentTimeMillis() < end) {
@@ -251,15 +269,16 @@ class SearchEspressoTest {
             if (seededSearchData) return
 
             runBlocking {
-                val user = UserRepo.login(testEmail, testPassword)
-                    ?: throw AssertionError("Test user login failed; cannot seed search data")
+                val user =
+                    UserRepo.login(testEmail, testPassword)
+                        ?: throw AssertionError("Test user login failed; cannot seed search data")
 
                 val swiftWissenCount = ArticlesRepo.searchArticles("swift wissen", 0)?.size ?: 0
                 if (swiftWissenCount == 0) {
                     ArticlesRepo.createArticle(
                         title = "swift wissen",
                         description = "e2e fixture",
-                        body = "fixture for search tests"
+                        body = "fixture for search tests",
                     )
                 }
 
@@ -268,7 +287,7 @@ class SearchEspressoTest {
                     ArticlesRepo.createArticle(
                         title = "swift basics",
                         description = "e2e fixture",
-                        body = "fixture for search tests"
+                        body = "fixture for search tests",
                     )
                 }
             }
@@ -277,4 +296,3 @@ class SearchEspressoTest {
         }
     }
 }
-
