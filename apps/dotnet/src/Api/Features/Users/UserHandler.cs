@@ -68,7 +68,7 @@ public class UserHandler(IConduitRepository repository, ITokenGenerator tokenGen
         }
 
         // 2. fallback: if there is no match (or if this is a regex collision and the database contained plaintext)
-        if (!isValid && !IsBCryptHash(user.Password))
+        if (!isValid)
         {
             isValid = user.Password == login.Password;
             if (isValid)
