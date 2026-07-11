@@ -1,6 +1,6 @@
 # Conduit - Cross-Platform RealWorld Implementation
 
-![Build Status](https://github.com/USERNAME/conduit-cross-platform/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/AdskiyPonchik/Conduit-cross-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/AdskiyPonchik/Conduit-cross-platform/actions/workflows/ci.yml)
 
 > A full-stack, cross-platform implementation of the [RealWorld (Conduit)](https://github.com/gothinkster/realworld) specification. 
 
