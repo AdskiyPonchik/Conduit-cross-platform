@@ -1,6 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { fireEvent, render } from '@testing-library/vue'
-import { useUserStore } from 'src/store/user'
 import { createTestRouter, renderOptions, setupMockServer } from 'src/utils/test/test.utils'
 import Admin from './Admin.vue'
 

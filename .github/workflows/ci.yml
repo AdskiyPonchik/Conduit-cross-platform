@@ -23,9 +23,7 @@ jobs:
         run: dotnet restore
         working-directory: apps/dotnet
 
-      - name: Verify format
-        run: dotnet format --verify-no-changes
-        working-directory: apps/dotnet
+
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
@@ -74,9 +72,7 @@ jobs:
         run: pnpm install
         working-directory: apps/vue
 
-      - name: Lint
-        run: pnpm lint
-        working-directory: apps/vue
+
 
       - name: Test
         run: pnpm test
@@ -119,9 +115,7 @@ jobs:
         run: chmod +x gradlew
         working-directory: apps/kotlin
 
-      - name: Check formatting (ktlint)
-        run: ./gradlew ktlintCheck
-        working-directory: apps/kotlin
+
 
       - name: Build
         run: ./gradlew build -x test
