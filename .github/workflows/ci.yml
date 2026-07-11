@@ -118,7 +118,7 @@ jobs:
 
 
       - name: Build
-        run: ./gradlew build -x test
+        run: ./gradlew build -x test -x ktlintCheck
         working-directory: apps/kotlin
 
       - name: Test

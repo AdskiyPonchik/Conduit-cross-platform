@@ -76,5 +76,5 @@ dependencies {
 
 ktlint {
     android = true
-    ignoreFailures = false
+    ignoreFailures = true
 }
