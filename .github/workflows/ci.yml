@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  dotnet:
+    name: .NET Core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: apps/dotnet
+
+      - name: Verify format
+        run: dotnet format --verify-no-changes
+        working-directory: apps/dotnet
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+        working-directory: apps/dotnet
+
+      - name: Test
+        run: dotnet test --no-build --no-restore --configuration Release --logger "trx;LogFileName=test-results.trx"
+        working-directory: apps/dotnet
+
+  vue:
+    name: Vue.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Setup .NET (for API)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Start .NET API
+        run: |
+          dotnet run --project src/Api --no-launch-profile --urls "http://localhost:5000" &
+          echo "Waiting for API to be ready..."
+          sleep 10
+          for i in {1..10}; do
+            if curl -f http://localhost:5000/api/tags > /dev/null 2>&1; then
+              echo "API ready!"
+              break
+            fi
+            sleep 5
+          done
+        working-directory: apps/dotnet
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: apps/vue
+
+      - name: Lint
+        run: pnpm lint
+        working-directory: apps/vue
+
+      - name: Test
+        run: pnpm test
+        working-directory: apps/vue
+
+  kotlin:
+    name: Kotlin / Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Setup .NET (for API)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Start .NET API
+        run: |
+          dotnet run --project src/Api --no-launch-profile --urls "http://localhost:5000" &
+          echo "Waiting for API to be ready..."
+          sleep 10
+          for i in {1..10}; do
+            if curl -f http://localhost:5000/api/tags > /dev/null 2>&1; then
+              echo "API ready!"
+              break
+            fi
+            sleep 5
+          done
+        working-directory: apps/dotnet
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+        working-directory: apps/kotlin
+
+      - name: Check formatting (ktlint)
+        run: ./gradlew ktlintCheck
+        working-directory: apps/kotlin
+
+      - name: Build
+        run: ./gradlew build -x test
+        working-directory: apps/kotlin
+
+      - name: Test
+        run: ./gradlew test
+        working-directory: apps/kotlin

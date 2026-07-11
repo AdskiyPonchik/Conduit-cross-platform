@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Realworlddotnet.Core.Entities;
 
 namespace Realworlddotnet.Data.Contexts;
@@ -41,6 +41,7 @@ public class ConduitContext(DbContextOptions<ConduitContext> options) : DbContex
             entity.HasOne(x => x.Article).WithMany(x => x.ArticleFavorites)
                 .HasForeignKey(x => x.ArticleId);
             entity.HasOne(x => x.User).WithMany(x => x.ArticleFavorites);
+            entity.Property(x => x.Timestamp).IsRequired(false);
         });
 
         modelBuilder.Entity<Comment>(entity =>
@@ -63,6 +64,12 @@ public class ConduitContext(DbContextOptions<ConduitContext> options) : DbContex
             entity.HasOne(x => x.FollowerUser)
                 .WithMany(x => x.FollowedUsers)
                 .HasForeignKey(x => x.FollowerUsername);
+        });
+
+        modelBuilder.Entity<SearchCount>(entity =>
+        {
+            entity.HasKey(e => e.KeywordId);
+            entity.Property(e => e.Count).IsRequired();
         });
     }
 }

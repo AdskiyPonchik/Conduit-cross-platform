@@ -1,4 +1,4 @@
-﻿using Realworlddotnet.Core.Dto;
+using Realworlddotnet.Core.Dto;
 using Realworlddotnet.Core.Entities;
 
 namespace Realworlddotnet.Core.Repositories;
@@ -47,9 +47,6 @@ public interface IConduitRepository
     public Task<List<Comment>> GetAllComments();
     public Task<List<UserLink>> GetAllFollowedUsers();
 
-    public Task<ArticlesResponseDto> SearchArticlesAsync(
-        string[] keywords, string username, int limit, int offset, CancellationToken cancellationToken);
-
-    public Task UpsertSearchCountAsync(string[] keywords, CancellationToken cancellationToken);
+    public Task<ArticlesResponseDto> SearchArticlesAsync(string query, int limit, int offset, string? username, CancellationToken cancellationToken);
     public void AddArticleImage(ArticleImage articleImage);
 }

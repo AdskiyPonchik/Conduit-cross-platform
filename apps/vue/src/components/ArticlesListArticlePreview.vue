@@ -36,19 +36,21 @@
       <h1>{{ article.title }}</h1>
       <p data-testid="article-description">{{ article.description }}</p>
       <span>Read more...</span>
-      <ul class="tag-list">
+      <ul class="tag-list" style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;">
         <li
-          v-for="tag in article.tagList.slice(0, 3)"
+          v-for="tag in article.tagList.slice(0, 5)"
           :key="tag"
           class="tag-default tag-pill tag-outline"
+          style="max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;"
         >
           {{ tag }}
         </li>
         <li
-          v-if="article.tagList.length > 3"
+          v-if="article.tagList.length > 5"
           class="tag-default tag-pill tag-outline"
+          style="margin: 0;"
         >
-          +{{ article.tagList.length - 3 }}
+          +{{ article.tagList.length - 5 }}
         </li>
       </ul>
     </AppLink>

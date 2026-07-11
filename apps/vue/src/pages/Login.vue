@@ -89,12 +89,18 @@ async function login() {
     updateUser(result.data.user)
     await routerPush('global-feed')
   }
-  catch (error) {
+  catch (error: any) {
     if (isFetchError(error)) {
-      errors.value = error.error?.errors ?? { login: ['Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.'] }
+      // Spezifische Abfrage für Authentifizierungsfehler
+      if (error.status === 422) { // "Incorrect Credentials"
+        errors.value = { 'Anmeldung': ['fehlgeschlagen. E-Mail oder Passwort ist inkorrekt.'] }
+      } else {
+        // Fallback: Entweder die exakte Backend-Meldung oder ein generischer Fehlertext
+        errors.value = error.error?.errors || { 'Ein unbekannter Fehler': ['ist aufgetreten. Bitte versuche es später erneut.'] }
+      }
       return
     }
-    errors.value = { login: ['Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.'] }
+    console.error(error)
   }
 }
 </script>

@@ -8,43 +8,53 @@ import io.realworld.android.data.UserRepo
 import io.realworld.api.models.entities.User
 import kotlinx.coroutines.launch
 
+sealed class AuthStatus {
+    object Idle : AuthStatus()
+    object Success : AuthStatus()
+    data class Error(val msg: String) : AuthStatus()
+}
+
 class AuthViewModel : ViewModel() {
     private val _user = MutableLiveData<User?>()
     val user: LiveData<User?> = _user
 
+    private val _authStatus = MutableLiveData<AuthStatus>(AuthStatus.Idle)
+    val authStatus: LiveData<AuthStatus> = _authStatus
+
     private val _loginError = MutableLiveData<String?>()
     val loginError: LiveData<String?> = _loginError
 
-    fun getCurrentUser(token: String) =
-        viewModelScope.launch {
-            val user = UserRepo.getCurrentUser(token)
-            _user.postValue(user)
-        }
-
-    fun login(
-        email: String,
-        password: String,
-    ) = viewModelScope.launch {
-        _loginError.postValue(null)
-        val user = UserRepo.login(email, password)
-        if (user != null) {
-            _user.postValue(user)
-        } else {
-            _loginError.postValue("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
+    fun getCurrentUser(token: String) = viewModelScope.launch {
+        UserRepo.getCurrentUser(token)?.let {
+            _user.postValue(it)
         }
     }
 
-    fun signup(
-        username: String,
-        email: String,
-        password: String,
-    ) = viewModelScope.launch {
+    fun login(email: String, password: String) = viewModelScope.launch {
+        try {
+            val user = UserRepo.login(email, password)
+            if (user != null) {
+                _user.postValue(user)
+                _authStatus.postValue(AuthStatus.Success)
+                _loginError.postValue(null)
+            } else {
+                _authStatus.postValue(AuthStatus.Error("Login fehlgeschlagen."))
+                _loginError.postValue("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
+            }
+        } catch (e: Exception) {
+            _authStatus.postValue(AuthStatus.Error(e.message ?: "Unbekannter Fehler"))
+            _loginError.postValue(e.message ?: "Unbekannter Fehler")
+        }
+    }
+
+    fun resetAuthStatus() {
+        _authStatus.postValue(AuthStatus.Idle)
+    }
+
+    fun signup(username: String, email: String, password: String) = viewModelScope.launch {
         _loginError.postValue(null)
-        val user = UserRepo.signup(username, email, password)
-        if (user != null) {
-            _user.postValue(user)
-        } else {
-            _loginError.postValue("Registrierung fehlgeschlagen. Bitte die Eingaben prüfen.")
+        UserRepo.signup(username, email, password)?.let {
+            _user.postValue(it)
         }
     }
 
@@ -57,7 +67,7 @@ class AuthViewModel : ViewModel() {
         username: String?,
         image: String?,
         email: String?,
-        password: String?,
+        password: String?
     ) = viewModelScope.launch {
         UserRepo.updateUser(bio, username, image, email, password)?.let {
             _user.postValue(it)

@@ -8,18 +8,21 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
+import com.google.android.material.snackbar.Snackbar
+import io.realworld.android.AuthStatus
 import io.realworld.android.AuthViewModel
 import io.realworld.android.R
 import io.realworld.android.databinding.FragmentLoginSignupBinding
 
 class LoginFragment : Fragment() {
+
     private var _binding: FragmentLoginSignupBinding? = null
     val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentLoginSignupBinding.inflate(inflater, container, false)
         _binding?.usernameEditText?.isVisible = false
@@ -27,33 +30,41 @@ class LoginFragment : Fragment() {
         return _binding?.root
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding?.apply {
             submitButton.setOnClickListener {
-                errorTextView.isVisible = false
                 authViewModel.login(
                     emailEditText.text.toString(),
-                    passwordEditText.text.toString(),
+                    passwordEditText.text.toString()
                 )
             }
         }
 
-        authViewModel.loginError.observe(viewLifecycleOwner) { errorMsg ->
-            _binding?.errorTextView?.apply {
-                if (errorMsg != null) {
-                    text = errorMsg
-                    isVisible = true
-                } else {
-                    isVisible = false
+        // assignment2: Snackbar-based authStatus observer for error feedback
+        authViewModel.authStatus.observe(viewLifecycleOwner) { status ->
+            when (status) {
+                is AuthStatus.Success -> {
+                    _binding?.submitButton?.isEnabled = true
+                    authViewModel.resetAuthStatus()
+                }
+
+                is AuthStatus.Error -> {
+                    _binding?.submitButton?.isEnabled = true
+                    _binding?.root?.let {
+                        Snackbar.make(it, status.msg, Snackbar.LENGTH_LONG).show()
+                    }
+                    authViewModel.resetAuthStatus()
+                }
+
+                is AuthStatus.Idle -> {
+                    _binding?.submitButton?.isEnabled = true
                 }
             }
         }
 
+        // assignment3: Navigate to feed on successful login
         authViewModel.user.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main)

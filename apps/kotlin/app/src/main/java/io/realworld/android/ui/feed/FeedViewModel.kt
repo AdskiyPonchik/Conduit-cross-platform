@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class FeedViewModel : ViewModel() {
+
     private val _feed = MutableLiveData<List<Article>>()
     val feed: LiveData<List<Article>> = _feed
 
@@ -24,6 +25,8 @@ class FeedViewModel : ViewModel() {
     val errorMessage: LiveData<String?> = _errorMessage
 
     private var currentOffset = 0
+    private val pageSize = 20
+    private var isGlobalFeed = true
     private val allArticles = mutableListOf<Article>()
     private var feedType: FeedType = FeedType.GLOBAL
     private var loadJob: Job? = null
@@ -31,15 +34,27 @@ class FeedViewModel : ViewModel() {
     enum class FeedType { GLOBAL, MY_FEED }
 
     fun fetchGlobalFeed() {
+        isGlobalFeed = true
         feedType = FeedType.GLOBAL
         resetAndLoad()
     }
 
     fun fetchMyFeed() {
+        isGlobalFeed = false
         feedType = FeedType.MY_FEED
         resetAndLoad()
     }
 
+    // assignment2: legacy load-more that checks isLoading guard
+    fun loadMoreItems() {
+        if (_isLoading.value == true) {
+            return
+        }
+        currentOffset += pageSize
+        loadPage(currentOffset)
+    }
+
+    // assignment3: cleaner loadMore with hasMore guard
     fun loadMore() {
         if (_isLoading.value == true || _hasMore.value == false) return
         loadPage(currentOffset)
@@ -55,39 +70,53 @@ class FeedViewModel : ViewModel() {
 
     private fun loadPage(offset: Int) {
         loadJob?.cancel()
-        loadJob =
-            viewModelScope.launch {
-                _isLoading.postValue(true)
-                try {
-                    val result =
-                        when (feedType) {
-                            FeedType.GLOBAL -> ArticlesRepo.getGlobalFeed(offset)
-                            FeedType.MY_FEED -> ArticlesRepo.getMyFeed(offset)
-                        }
-                    if (result != null) {
-                        _errorMessage.postValue(null)
-                        allArticles.addAll(result)
-                        currentOffset = allArticles.size
-                        _hasMore.postValue(result.size >= ArticlesRepo.pageSize)
-                        _feed.postValue(allArticles.toList())
-                    } else {
-                        Log.i("FeedViewModel", "loadPage returned null at offset $offset")
-                        _hasMore.postValue(false)
-                        if (offset == 0) {
-                            _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
-                            _feed.postValue(emptyList())
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e("FeedViewModel", "loadPage failed at offset $offset", e)
+        loadJob = viewModelScope.launch {
+            _isLoading.postValue(true)
+            try {
+                val result = when (feedType) {
+                    FeedType.GLOBAL -> ArticlesRepo.getGlobalFeed(offset)
+                    FeedType.MY_FEED -> ArticlesRepo.getMyFeed(offset)
+                }
+                if (result != null) {
+                    _errorMessage.postValue(null)
+                    allArticles.addAll(result)
+                    currentOffset = allArticles.size
+                    _hasMore.postValue(result.size >= ArticlesRepo.pageSize)
+                    _feed.postValue(allArticles.toList())
+                } else {
+                    Log.i("FeedViewModel", "loadPage returned null at offset $offset")
                     _hasMore.postValue(false)
                     if (offset == 0) {
                         _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
                         _feed.postValue(emptyList())
                     }
-                } finally {
-                    _isLoading.postValue(false)
                 }
+            } catch (e: Exception) {
+                Log.e("FeedViewModel", "loadPage failed at offset $offset", e)
+                _hasMore.postValue(false)
+                if (offset == 0) {
+                    _errorMessage.postValue("Server nicht verfügbar. Bitte später erneut versuchen.")
+                    _feed.postValue(emptyList())
+                }
+            } finally {
+                _isLoading.postValue(false)
             }
+        }
+    }
+
+    // assignment2: inline search within the feed (shows results in the main feed RecyclerView)
+    fun searchFeed(query: String) = viewModelScope.launch {
+        try {
+            val result = ArticlesRepo.searchArticles(query)
+            result?.let {
+                _feed.postValue(it)
+            } ?: run {
+                android.util.Log.i("FeedViewModel", "searchFeed returned null, using empty list")
+                _feed.postValue(emptyList())
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("FeedViewModel", "searchFeed failed", e)
+            _feed.postValue(emptyList())
+        }
     }
 }

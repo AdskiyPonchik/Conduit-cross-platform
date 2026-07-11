@@ -1,21 +1,24 @@
-﻿using Realworlddotnet.Core.Dto;
-using Realworlddotnet.Core.Entities;
+using BCrypt.Net;
+using Realworlddotnet.Core.Dto;
 using Realworlddotnet.Core.Repositories;
-using Realworlddotnet.Infrastructure.Utils.Interfaces;
+using Realworlddotnet.Core.Entities;
+using System.Text.RegularExpressions;
 
 namespace Realworlddotnet.Api.Features.Users;
 
-public class UserHandler(
-    IConduitRepository repository,
-    ITokenGenerator tokenGenerator,
-    IPasswordHasher passwordHasher)
+public class UserHandler(IConduitRepository repository, ITokenGenerator tokenGenerator)
     : IUserHandler
 {
     public async Task<UserDto> CreateAsync(NewUserDto newUser, CancellationToken cancellationToken)
     {
-        var user = new User(newUser)
+        // Hashing the password of new user BEFORE the entity is created
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
+
+        var user = new User
         {
-            Password = passwordHasher.HashPassword(newUser.Password)
+            Username = newUser.Username,
+            Email = newUser.Email,
+            Password = hashedPassword
         };
         await repository.AddUserAsync(user);
         await repository.SaveChangesAsync(cancellationToken);
@@ -27,10 +30,17 @@ public class UserHandler(
         string username, UpdatedUserDto updatedUser, CancellationToken cancellationToken)
     {
         var user = await repository.GetUserByUsernameAsync(username, cancellationToken);
-        var hashedPassword = updatedUser.Password != null
-            ? passwordHasher.HashPassword(updatedUser.Password)
-            : null;
-        user.UpdateUser(updatedUser with { Password = hashedPassword });
+        if (!string.IsNullOrEmpty(updatedUser.Password))
+        {
+            // creating new object but with changed password
+            updatedUser = updatedUser with
+            {
+                Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password)
+            };
+        }
+
+        user.UpdateUser(updatedUser);
+
         await repository.SaveChangesAsync(cancellationToken);
         var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
         return new UserDto(user.Username, user.Email, token, user.Bio, user.Image, user.Role.ToString());
@@ -39,17 +49,41 @@ public class UserHandler(
     public async Task<UserDto> LoginAsync(LoginUserDto login, CancellationToken cancellationToken)
     {
         var user = await repository.GetUserByEmailAsync(login.Email);
+        if (user == null) throw new ProblemDetailsException(422, "Incorrect Credentials");
 
-        if (user == null)
+        bool isValid = false;
+        bool needsMigration = false;
+
+        // 1. If it looks like BCrypt, first check it as a hash
+        if (IsBCryptHash(user.Password))
         {
-            throw new ProblemDetailsException(422, "Incorrect Credentials");
+            try
+            {
+                isValid = BCrypt.Net.BCrypt.Verify(login.Password, user.Password);
+            }
+            catch
+            {
+                isValid = false; // in case of an invalid format within BCrypt
+            }
         }
 
-        var passwordValid = passwordHasher.VerifyPassword(login.Password, user.Password);
-
-        if (!passwordValid)
+        // 2. fallback: if there is no match (or if this is a regex collision and the database contained plaintext)
+        if (!isValid && !IsBCryptHash(user.Password))
         {
-            throw new ProblemDetailsException(422, "Incorrect Credentials");
+            isValid = user.Password == login.Password;
+            if (isValid)
+            {
+                needsMigration = true; // Password matched as plain text -> time to hash.
+            }
+        }
+
+        if (!isValid) throw new ProblemDetailsException(422, "Incorrect Credentials");
+
+        // 3. We save the updated hash (EF will now write it).
+        if (needsMigration)
+        {
+            user.Password = BCrypt.Net.BCrypt.HashPassword(login.Password);
+            await repository.SaveChangesAsync(cancellationToken);
         }
 
         var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
@@ -75,5 +109,10 @@ public class UserHandler(
         await repository.SaveChangesAsync(cancellationToken);
         var token = tokenGenerator.CreateToken(user.Username, user.Role.ToString());
         return new UserDto(user.Username, user.Email, token, user.Bio, user.Image, user.Role.ToString());
+    }
+
+    private static bool IsBCryptHash(string password)
+    {
+        return Regex.IsMatch(password, @"^\$2[ayb]\$[0-9]{2}\$[./A-Za-z0-9]{53}$");
     }
 }

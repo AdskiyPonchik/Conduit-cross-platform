@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -255,35 +255,53 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
     }
 
     public async Task<ArticlesResponseDto> SearchArticlesAsync(
-        string[] keywords, string username, int limit, int offset, CancellationToken cancellationToken)
+        string query,
+        int limit,
+        int offset,
+        string? username,
+        CancellationToken cancellationToken)
     {
-        var query = context.Articles
-            .Include(x => x.Author)
-                .ThenInclude(x => x.Followers.Where(fu => fu.FollowerUsername == username))
-            .AsSplitQuery()
-            .AsQueryable();
+        var dbQuery = context.Articles.Select(x => x);
 
+        // Die Keywords an '+' oder Leerzeichen aufsplitten, weil '+' in Query-Strings als Leerzeichen ankommen kann.
+        var keywords = query.Split((char[])['+', ' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        await TrackSearchQueryAsync(keywords, cancellationToken);
+
+        // Durch alle Keywords iterieren. Jeder Where-Aufruf wirkt als logisches UND.
+        // Das bedeutet: Jedes Suchwort muss vorkommen!
         foreach (var keyword in keywords)
         {
-            var kw = keyword.ToLowerInvariant();
-            query = query.Where(x =>
-                x.Title.ToLower().Contains(kw) ||
-                x.Body.ToLower().Contains(kw) ||
-                x.Tags.Any(t => t.Id.ToLower().Contains(kw)));
+            var lowerKeyword = keyword.ToLower();
+
+            dbQuery = dbQuery.Where(a =>
+                a.Title.ToLower().Contains(lowerKeyword) ||
+                a.Body.ToLower().Contains(lowerKeyword) ||
+                a.Tags.Any(t => t.Id.ToLower().Contains(lowerKeyword)));
         }
 
-        query = query.OrderByDescending(x => x.UpdatedAt);
+        dbQuery = dbQuery.Include(x => x.Author);
 
-        var total = await query.CountAsync(cancellationToken);
-        var pageQuery = query
+        if (username is not null)
+        {
+            dbQuery = dbQuery.Include(x => x.Author)
+                .ThenInclude(x => x.Followers.Where(fu => fu.FollowerUsername == username))
+                .AsSplitQuery();
+        }
+
+        dbQuery = dbQuery.OrderByDescending(x => x.UpdatedAt);
+
+        var total = await dbQuery.CountAsync(cancellationToken);
+        var pageQuery = dbQuery
             .Skip(offset).Take(limit)
+            .Include(x => x.Author)
             .Include(x => x.Tags)
             .Include(x => x.ArticleFavorites)
             .Include(x => x.Images)
-            .AsSplitQuery()
             .AsNoTracking();
 
         var page = await pageQuery.ToListAsync(cancellationToken);
+
         foreach (var article in page)
         {
             article.FavoritesCount = article.ArticleFavorites.Count;
@@ -292,27 +310,28 @@ public class ConduitRepository(ConduitContext context) : IConduitRepository
         return new ArticlesResponseDto(page, total);
     }
 
-    public async Task UpsertSearchCountAsync(string[] keywords, CancellationToken cancellationToken)
+    private async Task TrackSearchQueryAsync(string[] keywords, CancellationToken cancellationToken)
     {
-        var keywordsLower = keywords.Select(k => k.ToLowerInvariant()).Order().ToList();
-        var keywordCombined = string.Join("+", keywordsLower);
+        var keywordId = string.Join("+", keywords
+            .Where(keyword => !string.IsNullOrWhiteSpace(keyword))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase));
 
-        if (keywordsLower.Count > 1)
+        if (string.IsNullOrWhiteSpace(keywordId))
         {
-            keywordsLower.Add(keywordCombined); // also update count for the combined keyword
+            return;
         }
 
-        foreach (var keyword in keywordsLower)
+        var searchCount = await context.SearchCounts
+            .FirstOrDefaultAsync(x => x.KeywordId == keywordId, cancellationToken);
+
+        if (searchCount is null)
         {
-            var entry = await context.SearchCounts.FirstOrDefaultAsync(x => x.KeywordId == keyword, cancellationToken);
-            if (entry is null)
-            {
-                context.SearchCounts.Add(new SearchCount { KeywordId = keyword, Count = 1 });
-            }
-            else
-            {
-                entry.Count++;
-            }
+            context.SearchCounts.Add(new SearchCount { KeywordId = keywordId, Count = 1 });
+        }
+        else
+        {
+            searchCount.Count++;
         }
 
         await context.SaveChangesAsync(cancellationToken);

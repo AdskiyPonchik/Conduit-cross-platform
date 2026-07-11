@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.FileProviders;
 using Realworlddotnet.Api.Features.Articles;
 using Realworlddotnet.Api.Features.Images;
@@ -8,7 +8,6 @@ using Realworlddotnet.Api.Features.Tags;
 using Realworlddotnet.Api.Features.Users;
 using Realworlddotnet.Core.Repositories;
 using Realworlddotnet.Infrastructure.Utils;
-using Realworlddotnet.Infrastructure.Utils.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,7 +77,6 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddScoped<IConduitRepository, ConduitRepository>();
 builder.Services.AddScoped<IUserHandler, UserHandler>();
-builder.Services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 builder.Services.AddScoped<IArticlesHandler, ArticlesHandler>();
 builder.Services.AddScoped<ITagsHandler, TagsHandler>();
 builder.Services.AddScoped<IProfilesHandler, ProfilesHandler>();
