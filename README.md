@@ -1,6 +1,6 @@
 # Conduit - Cross-Platform RealWorld Implementation
 
-[![CI](https://github.com/AdskiyPonchik/Conduit-cross-platform/actions/workflows/ci.yml/badge.svg?event=status)](https://github.com/AdskiyPonchik/Conduit-cross-platform/actions/workflows/ci.yml)
+[![CI](https://github.com/AdskiyPonchik/Conduit-cross-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/AdskiyPonchik/Conduit-cross-platform/actions/workflows/ci.yml)
 ![.NET 8](https://img.shields.io/badge/.NET_8-512BD4?style=flat-square&logo=dotnet&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/Vue%203-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white)
